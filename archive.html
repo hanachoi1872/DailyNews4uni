@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Compass — 지난 브리핑 모아보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#EBF3FA;--card:#FFFFFF;--ink:#211D2B;--ink-soft:#645C74;--line:#DAD5E2;--accent:#1E7FBF;--accent-ink:#0B4A73;--accent-soft:rgba(30,127,191,.12);--display:'Noto Sans KR','Malgun Gothic',sans-serif;--body:'Noto Sans KR','Malgun Gothic',system-ui,-apple-system,sans-serif;--mono:'Noto Sans KR','Malgun Gothic',sans-serif;--maxw:860px;}
+  [data-theme="dark"]{--paper:#131019;--card:#1C1826;--ink:#EDE9F4;--ink-soft:#A79FBA;--line:#322B42;--accent:#7DD3FC;--accent-ink:#7DD3FC;--accent-soft:rgba(125,211,252,.14);}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--paper:#131019;--card:#1C1826;--ink:#EDE9F4;--ink-soft:#A79FBA;--line:#322B42;--accent:#7DD3FC;--accent-ink:#7DD3FC;--accent-soft:rgba(125,211,252,.14);}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.66;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .masthead{padding:36px 0 20px;border-bottom:2.5px solid var(--ink)}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  .title{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,44px);line-height:1.1;letter-spacing:-.01em;margin:12px 0 0}
+  .back{margin-top:14px;display:inline-block;font-family:var(--mono);font-size:13px;color:var(--accent-ink);text-decoration:none}
+  ul.arclist{list-style:none;margin:28px 0;padding:0;display:grid;gap:10px}
+  ul.arclist li a{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;text-decoration:none;font-weight:600;font-size:15px}
+  ul.arclist li a:hover{border-color:var(--accent)}
+  ul.arclist li a .arrow{font-family:var(--mono);color:var(--accent-ink);font-size:13px}
+  footer{margin:40px 0;padding-top:14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">DAILY COMPASS ARCHIVE</div>
+    <h1 class="title">지난 브리핑 모아보기</h1>
+    <a class="back" href="index.html">← 오늘 브리핑으로 돌아가기</a>
+  </header>
+  <ul class="arclist">
+    <li><a href="archive/2026-07-13.html">2026년 7월 13일 (월)<span class="arrow">보기 →</span></a></li>
+  </ul>
+  <footer>매일 아침 9:30 KST 발행 후 이 목록에 자동으로 새 항목이 추가됩니다.</footer>
+</div>
+</body>
+</html>
