@@ -30,7 +30,7 @@
   .field{display:grid;grid-template-columns:92px 1fr;gap:10px;font-size:13.5px} .field .lab{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--accent-ink);padding-top:3px} .field.story .lab{color:var(--warm)} .field.story .val{background:var(--warm-soft);border-radius:8px;padding:9px 11px} .field .val b{color:var(--accent-ink)} @media (max-width:520px){.field{grid-template-columns:1fr}.field .lab{padding-top:0}}
   .terms{margin-top:2px;padding:10px 12px;border:1px dashed var(--line);border-radius:9px;background:color-mix(in srgb,var(--paper) 55%, transparent)} .terms .th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:5px} .terms .t{font-size:12.8px;color:var(--ink-soft);line-height:1.6;margin:2px 0} .terms .t b{color:var(--ink);font-weight:700}
   .jword{margin-top:2px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap} .jword .jw-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent-ink);white-space:nowrap} .jword .jw-text{font-size:13px;color:var(--ink);line-height:1.6} .jword .jw-text b{font-family:var(--display);font-size:15px} .jword .jw-r{color:var(--ink-soft);font-size:12px}
-  .think{margin-top:8px;background:var(--card);border:1.5px dashed var(--accent);border-radius:12px;padding:15px 17px} .think .tk{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .think p{margin:7px 0 0;font-size:14px;font-weight:500} .think .hint{margin-top:7px;font-size:12.8px;color:var(--ink-soft)}
+  .think{margin-top:8px;background:var(--card);border:1.5px dashed var(--accent);border-radius:12px;padding:15px 17px} .think .tk{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .think p{margin:7px 0 0;font-size:14px;font-weight:500} .think .steps{margin:12px 0 0;padding:0;list-style:none;counter-reset:st;display:grid;gap:9px} .think .steps li{position:relative;padding-left:27px;font-size:13.3px;line-height:1.6} .think .steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--accent-ink);border:1px solid var(--accent-ink);border-radius:50%;width:18px;height:18px;display:grid;place-items:center} .think .steps li b{color:var(--ink)} .think .hint{margin-top:12px;padding:10px 12px;background:var(--accent-soft);border-radius:9px;font-size:12.8px;color:var(--ink)} .think .hint b{color:var(--accent-ink)}
   footer{margin:34px 0 46px;padding-top:14px;border-top:2.5px solid var(--ink);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.8} footer a{color:var(--accent-ink)} @media print{nav.bar{display:none} .item__wrap{grid-template-rows:1fr!important}}
 </style>
 </head>
@@ -146,8 +146,16 @@ const BRIEFING = { dateLabel:"2026.07.13 (월)", city:"Seoul", mood:"🌡️ 지
        terms:[]}
     ]}
   ],
-  think:{q:"호르무즈 해협이 완전히 봉쇄된다면, 당신이 자문하는 글로벌 화학기업 클라이언트에게 앞으로 4주 안에 무엇을 권고하겠는가?",
-    hint:"원유·원자재 대체 조달 경로, 헤징 전략, 재고 정책, 고객사와의 가격 전가 협상까지 — 실제 에너지·화학 케이스 인터뷰에서 반복적으로 등장하는 프레임이다. '공급 다변화 → 비용 구조 재설계 → 커뮤니케이션 전략' 순서로 답을 구조화해보자."},
+  think:{
+    q:"호르무즈 해협이 완전히 봉쇄된다면, 당신이 자문하는 글로벌 화학기업 클라이언트에게 앞으로 4주 안에 무엇을 권고하겠는가?",
+    steps:[
+      {label:"1. 현황 파악", detail:"호르무즈 해협은 전 세계 해상 원유 물동량의 약 20%(하루 약 2000만 배럴)가 지나는 병목 지점이다. 현재 브렌트유는 배럴당 79달러로 주간 5.4% 급등했고, 완전 봉쇄 시 클라이언트가 쓰는 원유·나프타 조달가는 단기간에 두 자릿수 % 이상 뛸 수 있다."},
+      {label:"2. 문제 구조화", detail:"클라이언트에게 미치는 충격을 세 갈래로 MECE하게 쪼갠다 — ① 원자재 조달 비용 상승(원유·나프타), ② 물류 리스크(희망봉 우회 시 운송기간 약 2주 추가, 해상보험료 급등), ③ 고객사와의 가격 전가 문제(장기 공급계약 vs 스팟 계약)."},
+      {label:"3. 옵션 도출", detail:"갈래별로 구체적 대안을 나열한다 — 조달처 다변화(美 셰일오일, 사우디의 여유 생산능력, 러시아산 우회 수입), 재고 정책(전략비축유 SPR 방출 요청, 자체 재고를 4~6주치로 확대), 헤징(원유 선물·옵션으로 가격 변동폭 제한), 물류 대안(사우디 동-서 파이프라인 vs 희망봉 우회 항로)."},
+      {label:"4. 트레이드오프 비교 및 추천", detail:"옵션마다 비용·속도·리스크가 다르다 — 셰일오일은 조달은 빠르지만 단가가 비싸고, 러시아산은 저렴하지만 제재 리스크가 있다. 최종안은 '단기(4주)엔 헤징+재고 확대로 버티고, 중기엔 조달처를 다변화하며, 고객사와는 원자재 가격 연동 조항을 재협상한다'는 3단 로드맵으로 구조화해 제시한다."}
+    ],
+    hint:"<b>Takeaway</b> — 실제 MBB 케이스 인터뷰에서는 '공급망 다변화' 같은 한 단어짜리 답은 감점 요인이다. 위처럼 사실 확인 → 문제 구조화(MECE) → 구체적 옵션 나열 → 트레이드오프 비교 후 추천, 이 4단계를 명시적으로 거치는 것 자체가 '컨설턴트처럼 생각한다'는 것을 보여주는 핵심이다."
+  },
   calendar:{note:"일정은 유동적이므로 확정 전 원문 확인을 권장한다.",
     macro:[
       {date:"07.14(화)",reg:"🇺🇸",ev:"美 6월 CPI 발표",nt:"워시 연준의 매파 전환 이후 첫 핵심 물가지표. 예상치 상회 시 7월 인상 베팅 강화 가능."},
@@ -176,12 +184,12 @@ function termsRow(terms){ if(!terms||!terms.length) return ""; return `<div clas
 function vocabRow(v){ if(!v) return ""; return `<div class="jword"><span class="jw-badge">🇯🇵 오늘의 비즈니스 일본어</span><span class="jw-text"><b>${esc(v.w)}</b> <span class="jw-r">(${esc(v.r)})</span> — ${esc(v.m)}</span></div>`; }
 function itemCard(it){ return `<article class="item open"><button class="item__head" aria-expanded="true" type="button"><span class="tag">${esc(it.tag)}</span><span><span class="item__title">${esc(it.title)}</span><br>${srcHtml(it.source)}</span><span class="chev">▾</span></button><div class="item__wrap"><div class="item__body"><div class="item__inner">${fieldRow("무슨 일",it.f1)}${fieldRow("그동안의 이야기",it.f2,"story")}${fieldRow("So What",it.f3)}${termsRow(it.terms)}${vocabRow(it.vocab)}</div></div></div></article>`; }
 let html = BRIEFING.sections.map(s=>`<section class="block" id="${s.id}"><div class="shead"><span class="no">${esc(s.no)}</span><h2>${esc(s.title)}</h2><span class="slug">${esc(s.slug)}</span></div>${s.items.map(itemCard).join("")}</section>`).join("");
-if(BRIEFING.think){ html += `<section class="block" id="think"><div class="think"><span class="tk">💭 오늘의 생각거리 — 컨설턴트처럼 생각하기</span><p>${esc(BRIEFING.think.q)}</p><div class="hint">${esc(BRIEFING.think.hint)}</div></div></section>`; }
+if(BRIEFING.think){ const th=BRIEFING.think; const stepsHtml=(th.steps||[]).map(s=>`<li><b>${esc(s.label)}</b> — ${esc(s.detail)}</li>`).join(""); html += `<section class="block" id="think"><div class="think"><span class="tk">💭 오늘의 생각거리 — 컨설턴트처럼 생각하기</span><p>${esc(th.q)}</p><ol class="steps">${stepsHtml}</ol><div class="hint">${th.hint||""}</div></div></section>`; }
 const c = BRIEFING.calendar || {macro:[],earnings:[],sources:[]};
 html += `<section class="block" id="cal"><div class="shead"><span class="no">📅</span><h2>다가오는 일정</h2><span class="slug">watchlist</span></div><div class="terms" style="border-style:solid">${[...(c.macro||[]),...(c.earnings||[])].map(r=>`<div class="t"><b>${esc(r.date)} ${esc(r.reg||"")} ${esc(r.ev)}</b>${r.nt?` — ${esc(r.nt)}`:""}</div>`).join("")}<div class="th" style="margin-top:8px">${esc(c.note||"")}</div></div></section>`;
 $("#main").innerHTML = html;
 const calSrc = (c.sources||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)} ↗</a>`).join(" · ");
-$("#main").insertAdjacentHTML("beforeend",`<footer>소스 정책: Bloomberg · CNBC · BBC · ABC · Reuters · AP + 한국 주요 언론 + 일본 니케이·Japan Times 등 + 컨설팅업계 전문 매체 — 작성 시점 검색·교차 확인 기준.<br>전황·시세는 빠르게 변하므로 중요한 판단 전 원문 확인 권장 · 일정 출처: ${calSrc}<br>💡 매일 아침 8:30 KST에 이 페이지가 자동으로 새 브리핑으로 갱신됩니다. · 📚 <a href="archive.html">지난 브리핑 모아보기</a></footer>`);
+$("#main").insertAdjacentHTML("beforeend",`<footer>소스 정책: Bloomberg · CNBC · BBC · ABC · Reuters · AP + 한국 주요 언론 + 일본 니케이·Japan Times 등 + 컨설팅업계 전문 매체 — 작성 시점 검색·교차 확인 기준.<br>전황·시세는 빠르게 변하므로 중요한 판단 전 원문 확인 권장 · 일정 출처: ${calSrc}<br>💡 매일 아침 9:30 KST에 이 페이지가 자동으로 새 브리핑으로 갱신됩니다. · 📚 <a href="archive.html">지난 브리핑 모아보기</a></footer>`);
 document.querySelectorAll(".item__head").forEach(h=>{ h.addEventListener("click",()=>{ const it=h.closest(".item"); const open=it.classList.toggle("open"); h.setAttribute("aria-expanded",open?"true":"false"); }); });
 const allBtn=$("#toggleAll"), allLab=$("#toggleAllLabel");
 allBtn.addEventListener("click",()=>{ const items=[...document.querySelectorAll(".item")]; const anyClosed=items.some(i=>!i.classList.contains("open")); items.forEach(i=>{i.classList.toggle("open",anyClosed); i.querySelector(".item__head").setAttribute("aria-expanded",anyClosed?"true":"false");}); allLab.textContent=anyClosed?"접기":"펼치기"; });
