@@ -17,10 +17,16 @@ jobs:
         run: |
           $kst = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), [System.TimeZoneInfo]::FindSystemTimeZoneById("Korea Standard Time"))
           $iso = $kst.ToString("yyyy-MM-dd")
-          $wd = @("일","월","화","수","목","금","토")[[int]$kst.DayOfWeek]
-          $label = "$($kst.Year)년 $($kst.Month)월 $($kst.Day)일 ($wd)"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "iso=$iso" -Encoding UTF8
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "label=$label" -Encoding UTF8
+          $wdNames = [char[]]@(0xC77C,0xC6D4,0xD654,0xC218,0xBAA9,0xAE08,0xD1A0)
+          $wd = $wdNames[[int]$kst.DayOfWeek]
+          $nyeon = [char]0xB144
+          $nwol = [char]0xC6D4
+          $nil = [char]0xC77C
+          $label = "$($kst.Year)$nyeon $($kst.Month)$nwol $($kst.Day)$nil ($wd)"
+          $outFile = $env:GITHUB_OUTPUT
+          $enc = New-Object System.Text.UTF8Encoding($false)
+          [System.IO.File]::AppendAllText($outFile, "iso=$iso`n", $enc)
+          [System.IO.File]::AppendAllText($outFile, "label=$label`n", $enc)
 
       - name: Build today's prompt
         shell: powershell
