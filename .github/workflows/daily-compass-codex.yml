@@ -13,31 +13,32 @@ jobs:
 
       - name: Compute KST date
         id: date
-        shell: pwsh
+        shell: powershell
         run: |
           $kst = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), [System.TimeZoneInfo]::FindSystemTimeZoneById("Korea Standard Time"))
           $iso = $kst.ToString("yyyy-MM-dd")
           $wd = @("일","월","화","수","목","금","토")[[int]$kst.DayOfWeek]
           $label = "$($kst.Year)년 $($kst.Month)월 $($kst.Day)일 ($wd)"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "iso=$iso"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "label=$label"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "iso=$iso" -Encoding UTF8
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "label=$label" -Encoding UTF8
 
       - name: Build today's prompt
-        shell: pwsh
+        shell: powershell
         run: |
-          $tpl = Get-Content -Raw ".github/scripts/codex-daily-prompt.txt"
+          $tpl = [System.IO.File]::ReadAllText("$pwd\.github\scripts\codex-daily-prompt.txt", [System.Text.Encoding]::UTF8)
           $tpl = $tpl -replace "DATE_ISO_PLACEHOLDER", "${{ steps.date.outputs.iso }}"
           $tpl = $tpl -replace "DATE_LABEL_PLACEHOLDER", "${{ steps.date.outputs.label }}"
-          Set-Content -Path "codex-prompt-today.txt" -Value $tpl -NoNewline
+          [System.IO.File]::WriteAllText("$pwd\codex-prompt-today.txt", $tpl, [System.Text.UTF8Encoding]::new($false))
 
       - name: Generate briefing with Codex
-        shell: pwsh
+        shell: powershell
         run: |
-          Get-Content -Raw "codex-prompt-today.txt" | codex exec --sandbox workspace-write -
+          $prompt = [System.IO.File]::ReadAllText("$pwd\codex-prompt-today.txt", [System.Text.Encoding]::UTF8)
+          $prompt | codex exec --sandbox workspace-write -
           Remove-Item "codex-prompt-today.txt"
 
       - name: Commit and push
-        shell: pwsh
+        shell: powershell
         run: |
           git config user.name "Daily Compass Bot"
           git config user.email "actions@users.noreply.github.com"
