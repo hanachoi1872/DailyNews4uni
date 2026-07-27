@@ -1,0 +1,51 @@
+name: Daily Compass (Codex)
+
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    runs-on: [self-hosted, dailycompass]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute KST date
+        id: date
+        shell: pwsh
+        run: |
+          $kst = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), [System.TimeZoneInfo]::FindSystemTimeZoneById("Korea Standard Time"))
+          $iso = $kst.ToString("yyyy-MM-dd")
+          $wd = @("일","월","화","수","목","금","토")[[int]$kst.DayOfWeek]
+          $label = "$($kst.Year)년 $($kst.Month)월 $($kst.Day)일 ($wd)"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "iso=$iso"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "label=$label"
+
+      - name: Build today's prompt
+        shell: pwsh
+        run: |
+          $tpl = Get-Content -Raw ".github/scripts/codex-daily-prompt.txt"
+          $tpl = $tpl -replace "DATE_ISO_PLACEHOLDER", "${{ steps.date.outputs.iso }}"
+          $tpl = $tpl -replace "DATE_LABEL_PLACEHOLDER", "${{ steps.date.outputs.label }}"
+          Set-Content -Path "codex-prompt-today.txt" -Value $tpl -NoNewline
+
+      - name: Generate briefing with Codex
+        shell: pwsh
+        run: |
+          Get-Content -Raw "codex-prompt-today.txt" | codex exec --sandbox workspace-write -
+          Remove-Item "codex-prompt-today.txt"
+
+      - name: Commit and push
+        shell: pwsh
+        run: |
+          git config user.name "Daily Compass Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "No changes to commit"
+            exit 0
+          }
+          git commit -m "Daily update ${{ steps.date.outputs.iso }}"
+          git push
