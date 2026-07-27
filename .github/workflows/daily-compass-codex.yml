@@ -56,3 +56,11 @@ jobs:
           }
           git commit -m "Daily update ${{ steps.date.outputs.iso }}"
           git push
+
+      - name: Send Telegram digest
+        shell: powershell
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          node .github/scripts/send-telegram.js
