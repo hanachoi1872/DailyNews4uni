@@ -53,17 +53,24 @@ if (!token || !chatId) {
   throw new Error("TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID env var missing");
 }
 
-fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ chat_id: chatId, text: summary }),
-})
-  .then(async (res) => {
-    const body = await res.text();
-    console.log("Telegram response:", res.status, body);
-    if (!res.ok) process.exit(1);
-  })
-  .catch((err) => {
-    console.error("Telegram send failed:", err);
-    process.exit(1);
-  });
+async function sendWithRetry(attempts) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: summary }),
+      });
+      const body = await res.text();
+      console.log("Telegram response:", res.status, body);
+      if (res.ok) return;
+      throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      console.error(`Telegram send attempt ${i}/${attempts} failed:`, err.message || err);
+      if (i === attempts) process.exit(1);
+      await new Promise((r) => setTimeout(r, 10000 * i));
+    }
+  }
+}
+
+sendWithRetry(3);
