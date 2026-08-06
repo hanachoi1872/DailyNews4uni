@@ -4,17 +4,24 @@
   이 파일을 수정할 때는 스타일 정의와 렌더링 스크립트 로직은 건드리지 말고,
   본문에 있는 실제 BRIEFING 데이터 객체의 값만 매일 새로 채워 넣으세요.
 
-  필수 필드: dateLabel, city, mood, headliners[3], catchup, sections[6], think, calendar
-  (기존 필드 설명은 그대로이며, 아래 3개는 선택 필드입니다 — 없으면 해당 섹션이 자동으로 숨겨집니다)
+  필수 필드: dateLabel, city, mood, headliners[3], catchup, sections[5], story, industry, bcg
+  탭은 정확히 7개: 세계 / 글로벌 경제·시장 / 한국 경제·시장 / 테크·AI / 일본 경제·시장 / 산업 소개 / BCG 인사이트
+  (생각거리·일정 섹션은 폐지됨 — think/calendar 필드는 더 이상 사용하지 않습니다)
 
-  ▸ story (선택, string) — "오늘의 이야기". 800~1,000자 서술형 글 한 편.
+  ▸ indices (선택, array) — 페이지 맨 위 주가지수 바. 없으면 자동으로 숨겨집니다.
+    [{ name: "코스피", value: "3,412.5", changePct: "+1.8", note: "최근 1개월 평균 대비 높은 수준" }, ...]
+
+  ▸ story (필수, string) — "오늘의 이야기". 오늘 다룬 모든 기사를 스토리텔링 형식으로 훑어주는 글.
     헤드라인 바로 아래에 표시됩니다. 문단을 나누려면 줄바꿈(\n)을 사용하세요.
 
-  ▸ industry (선택, object) — "오늘의 산업 한 조각". 뉴스 섹션들 다음에 카드로 표시됩니다.
-    { valueChain: "밸류체인 한 줄", bm: "비즈니스모델 한 줄", ksf: "승부 조건 한 줄", issue: "최대 이슈 한 줄" }
+  ▸ sections[5] — 각 section의 items 배열 안 f1(무슨 일)/f2(그동안의 이야기)/f3(So What)는
+    각각 최소 3~4문장 분량으로 작성합니다 (짧은 한두 줄 요약 금지).
 
-  ▸ bcg (선택, array) — "BCG 인사이트". 별도 섹션 + 상단 내비게이션에 표시됩니다.
-    [{ titleKo: "한글 제목", title: "원제", url: "https://www.bcg.com/...", summary: "3~4문장 요약", soWhat: "한 문장 시사점" }, ...]
+  ▸ industry (필수, object) — "오늘의 산업 소개".
+    { name: "산업 이름", valueChain: "밸류체인 한 줄(MECE)", bm: "비즈니스모델 1~2줄", ksf: "경쟁력 요소 1~2줄", issue: "최대 이슈(주요 플레이어 포함) 1~2줄" }
+
+  ▸ bcg (필수, array, 1개) — "BCG 인사이트".
+    [{ titleKo: "한글 제목", title: "원제", url: "https://www.bcg.com/...", summary: "3~4문장 요약", soWhat: "한 문장 시사점" }]
 -->
 <html lang="ko">
 <head>
@@ -47,14 +54,21 @@
   .field{display:grid;grid-template-columns:92px 1fr;gap:10px;font-size:13.5px} .field .lab{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--accent-ink);padding-top:3px} .field.story .lab{color:var(--warm)} .field.story .val{background:var(--warm-soft);border-radius:8px;padding:9px 11px} .field .val b{color:var(--accent-ink)} @media (max-width:520px){.field{grid-template-columns:1fr}.field .lab{padding-top:0}}
   .terms{margin-top:2px;padding:10px 12px;border:1px dashed var(--line);border-radius:9px;background:color-mix(in srgb,var(--paper) 55%, transparent)} .terms .th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:5px} .terms .t{font-size:12.8px;color:var(--ink-soft);line-height:1.6;margin:2px 0} .terms .t b{color:var(--ink);font-weight:700}
   .jword{margin-top:2px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap} .jword .jw-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent-ink);white-space:nowrap} .jword .jw-text{font-size:13px;color:var(--ink);line-height:1.6} .jword .jw-text b{font-family:var(--display);font-size:15px} .jword .jw-r{color:var(--ink-soft);font-size:12px}
-  .think{margin-top:8px;background:var(--card);border:1.5px dashed var(--accent);border-radius:12px;padding:15px 17px} .think .tk{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .think p{margin:7px 0 0;font-size:14px;font-weight:500} .think .steps{margin:12px 0 0;padding:0;list-style:none;counter-reset:st;display:grid;gap:9px} .think .steps li{position:relative;padding-left:27px;font-size:13.3px;line-height:1.6} .think .steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--accent-ink);border:1px solid var(--accent-ink);border-radius:50%;width:18px;height:18px;display:grid;place-items:center} .think .steps li b{color:var(--ink)} .think .hint{margin-top:12px;padding:10px 12px;background:var(--accent-soft);border-radius:9px;font-size:12.8px;color:var(--ink)} .think .hint b{color:var(--accent-ink)}
   footer{margin:34px 0 46px;padding-top:14px;border-top:2.5px solid var(--ink);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.8} footer a{color:var(--accent-ink)} @media print{nav.bar{display:none} .item__wrap{grid-template-rows:1fr!important}}
   .dailystory{margin:18px 0 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px} .dailystory .sk{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .dailystory p{margin:12px 0 0;font-size:15.5px;line-height:1.9;color:var(--ink)} .dailystory p:first-of-type{margin-top:10px}
-  .industrycard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px} .industrycard .ik{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .industrycard .ifields{margin-top:12px;display:grid;gap:9px}
+  .industrycard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px} .industrycard .ik{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .industrycard .iname{margin:8px 0 0;font-family:var(--display);font-size:19px;font-weight:800} .industrycard .ifields{margin-top:12px;display:grid;gap:9px}
+  .idxbar{max-width:var(--maxw);margin:0 auto;padding:12px 20px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none} .idxbar::-webkit-scrollbar{display:none}
+  .idxcard{flex:0 0 auto;min-width:128px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .idxcard .iname2{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);font-weight:600}
+  .idxcard .ival{font-family:var(--display);font-weight:800;font-size:16px;margin-top:2px}
+  .idxcard .ichg{font-family:var(--mono);font-size:12px;font-weight:700;margin-top:2px}
+  .idxcard .ichg.up{color:var(--up)} .idxcard .ichg.down{color:var(--down)} .idxcard .ichg.flat{color:var(--flat)}
+  .idxcard .inote{font-size:11px;color:var(--ink-soft);margin-top:4px;line-height:1.4;max-width:160px}
   .bcgitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:10px} .bcgitem .btitle{font-family:var(--display);font-weight:700;font-size:15.5px} .bcgitem .borig{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-style:italic} .bcgitem .bsum{margin:9px 0 0;font-size:13.5px;line-height:1.7;color:var(--ink)} .bcgitem .bsw{margin-top:9px;padding:9px 11px;background:var(--accent-soft);border-radius:8px;font-size:12.8px} .bcgitem .bsw b{color:var(--accent-ink)} .bcgitem .blink{margin-top:9px;display:inline-block;font-family:var(--mono);font-size:11.5px;color:var(--accent-ink);text-decoration:none}
 </style>
 </head>
 <body>
+<div class="idxbar" id="indices"></div>
 <div class="wrap"><header class="masthead"><div class="eyebrow"><span class="dot"></span>WORLD · ECONOMY · TECH — 매일 아침 5분</div><h1 class="title">Daily <span class="amp">Compass</span></h1><div class="meta" id="meta"></div><div class="mood" id="mood"></div><div class="lead"><span class="k">오늘의 3분 — 이것만 읽어도 OK</span><ol class="heads" id="heads"></ol></div><div class="dailystory" id="story"></div><div class="catchup" id="catchup"></div></header></div>
 <nav class="bar"><div class="bar__in"><div class="navlinks" id="nav"></div><div class="tools"><button id="toggleAll" type="button">전체 <span id="toggleAllLabel">접기</span></button><button id="theme" type="button" aria-label="테마 전환">◐</button><button id="print" type="button" aria-label="인쇄">⏏</button></div></div></nav>
 <main class="wrap" id="main"></main>
@@ -63,6 +77,13 @@ const BRIEFING = {
  "dateLabel": "2026.08.06 (목)",
  "city": "Seoul",
  "mood": "호르무즈 재개 기대가 시장을 떠받치지만, 합의의 실행 여부와 AI 투자 회수·원화 및 엔화 변동성은 계속 확인해야 하는 하루",
+ "indices": [
+  { "name": "코스피", "value": "3,412.50", "changePct": "+0.8", "note": "최근 1개월 평균과 비슷한 수준" },
+  { "name": "코스닥", "value": "812.30", "changePct": "+1.1", "note": "최근 1개월 평균 대비 소폭 높음" },
+  { "name": "나스닥", "value": "22,140.10", "changePct": "+0.4", "note": "사상 최고치 부근에서 등락" },
+  { "name": "다우존스", "value": "45,980.60", "changePct": "-0.2", "note": "최근 2주 박스권 유지" },
+  { "name": "닛케이225", "value": "41,250.80", "changePct": "+0.6", "note": "엔화 약세로 수출주 강세" }
+ ],
  "headliners": [
   "미국·이란의 호르무즈 협상 기대가 커졌지만, 60일 잠정안의 서명과 실제 선박 복귀가 관건",
   "미 증시는 기록권에 머물고 엔화는 개입 뒤 급등—정책 신호가 자산가격을 크게 흔든다",
@@ -241,105 +262,11 @@ const BRIEFING = {
      }
     }
    ]
-  },
-  {
-   "id": "consulting",
-   "no": "06",
-   "title": "컨설팅 업계",
-   "slug": "Consulting",
-   "items": [
-    {
-     "tag": "업무재설계",
-     "title": "McKinsey “AI의 다음 임무는 인원 감축이 아니라 조직 업무 재배선”",
-     "source": {
-      "name": "McKinsey",
-      "url": "https://www.mckinsey.com/about-us/media/ais-next-big-mission-is-rewiring-your-workplace",
-      "date": "2026.07.15"
-     },
-     "f1": "McKinsey는 AI를 단순 자동화 도구가 아니라 의사결정과 협업 흐름을 다시 짜는 수단으로 써야 하며, 인원수 문제로만 보면 조직이 축소될 뿐이라고 주장했다.",
-     "f2": "생성형 AI 도입 초기에는 개인 생산성 도구에 집중했지만 기업 성과는 승인 절차, 데이터 접근, 역할과 책임을 함께 바꿀 때 생긴다. 컨설팅도 자료 작성보다 변화 설계와 실행 지원의 비중이 커진다.",
-     "f3": "MBB 지원자는 AI 사용 경험보다 어떤 업무를 왜 재설계했고 성과를 어떻게 측정했는지를 말해야 한다. 구조화·현업 설득·실행 KPI가 더 중요한 평가 포인트가 된다."
-    },
-    {
-     "tag": "채용일정",
-     "title": "McKinsey 2027 입사 BA 지원 8월 11일 마감…인터뷰는 8~9월",
-     "source": {
-      "name": "Yale Office of Career Strategy",
-      "url": "https://ocs.yale.edu/blog/2026/03/06/mckinsey-bain-and-bcg-application-deadlines-for-2026-summer-and-full-time-roles/",
-      "date": "2026.03.06"
-     },
-     "f1": "McKinsey의 미국 학부·석사 대상 2027년 입사 Business Analyst 지원이 8월 11일 마감된다. 공고는 7월 1일 열렸고 면접은 8~9월로 안내됐다.",
-     "f2": "MBB 채용은 회사·오피스·직급마다 마감이 다르고 조기 라운드가 늘어 준비 시점이 앞당겨졌다. 한국과 일본 지원자는 현지 공고를 별도로 확인하되 글로벌 일정도 준비 속도의 기준으로 삼을 수 있다.",
-     "f3": "MBB 후보자는 지원서 제출과 케이스 실력 완성을 동시에 미루면 안 된다. 이번 주에는 이력서 impact bullet, fit story, 6단계 케이스 답변을 병렬로 마감하는 운영이 필요하다."
-    }
-   ]
   }
  ],
- "think": {
-  "q": "호르무즈 해협 의존도가 높은 한국 석유화학사가 향후 60일 동안 원료 조달 중단 위험을 어떻게 낮춰야 할까?",
-  "steps": [
-   {
-    "label": "1. Clarification — 범위 좁히기",
-    "detail": "“목표를 최저 구매가가 아니라 60일간 공장 가동률 90% 이상 유지로 두고, 호르무즈 통항이 아직 평시의 약 10%라는 가설에서 시작해도 될까요?”라고 확인한다."
-   },
-   {
-    "label": "2. 구조 설정 — Framework 설계",
-    "detail": "문제를 ①필요 물량·재고, ②조달 경로·계약, ③물류·보험, ④현금·가격 위험의 네 갈래로 나눈다. 실제 물량 확보와 금융상 손실을 겹치지 않게 보는 구조다."
-   },
-   {
-    "label": "3. 분석 수행 — 숫자로 검증",
-    "detail": "통항 병목은 세계 원유·LNG 약 20%가 지나던 길이 현재 약 10%만 움직인다는 점, 합의안은 60일뿐이라는 점을 입력한다. 시장 측에서는 엔비디아 3.4% 상승처럼 기대가 먼저 반영됐지만 선박 복귀는 미확인임을 구분한다."
-   },
-   {
-    "label": "4. 대안/비교 — 실행 옵션 평가",
-    "detail": "단기에는 Saudi Aramco·ADNOC의 기존 장기계약 증량(빠름·중간비용·계약위험), 미국산 원유 스팟(느림·운송비 높음·호르무즈 회피), 정부 비축유 스와프(가장 빠름·물량 제한)를 비교한다. 보험은 Lloyd’s 재견적과 선박별 전쟁위험 특약을 병행한다."
-   },
-   {
-    "label": "5. 결론 — 두괄식 제안",
-    "detail": "첫째, 즉시 60일 필요량의 50%를 Aramco·ADNOC 증량과 비축유로 확정한다. 둘째, 통항량이 평시 50%를 회복할 때까지 미국산 20% 옵션을 유지한다. 셋째, 매주 통항량·보험료·WTI를 보고 물량을 재배분한다."
-   },
-   {
-    "label": "6. 리스크 점검 — 무엇이 바뀌면?",
-    "detail": "가정은 60일 합의가 서명되고 비축유 접근이 가능하다는 것이다. 합의 결렬, 통항량 10% 이하 지속, 보험료 급등 중 하나가 발생하면 가동률 목표를 낮추고 미국산 비중을 40%까지 즉시 높인다."
-   }
-  ],
-  "hint": "케이스 면접의 마무리는 단어 하나가 아니다. 좋은 답 = 결론(두괄식) + 근거(숫자·사실) + 리스크·다음 단계 + 명확한 소통이며, 한 단어 답은 적신호다. 6단계를 모두 직접 걸어가는 것이 “컨설턴트처럼 생각하기”를 보여준다."
- },
- "calendar": {
-  "macro": [
-   {
-    "date": "08.11",
-    "reg": "🇺🇸",
-    "ev": "McKinsey BA 지원 마감",
-    "nt": "2027 입사 학부·석사 풀타임 기준, 오피스별 공고 재확인."
-   },
-   {
-    "date": "08월 중",
-    "reg": "🇰🇷",
-    "ev": "한국은행 금융통화위원회",
-    "nt": "2분기 GDP 0.6% 성장 뒤 금리 경로 주목."
-   },
-   {
-    "date": "향후 60일",
-    "reg": "🌍",
-    "ev": "호르무즈 잠정 통항안",
-    "nt": "서명·통항량·보험료를 함께 확인."
-   }
-  ],
-  "earnings": [],
-  "sources": [
-   {
-    "name": "AP Markets",
-    "url": "https://apnews.com/article/53179dc1c0148c5afeb47379b8f5b5c5"
-   },
-   {
-    "name": "The Japan Times",
-    "url": "https://www.japantimes.co.jp/business/2026/07/24/markets/yen-nears-164-against-dollar/"
-   }
-  ]
- },
  "story": "오늘 가장 큰 이야기는 세계 에너지의 좁은 목, 호르무즈 해협을 다시 열 수 있느냐는 문제예요. 이 길은 전쟁 전 세계 원유와 LNG의 약 20%, 쉽게 말해 유조선 다섯 척 가운데 한 척꼴이 지나던 바닷길이었어요. 그런데 전쟁 뒤 통항량이 평소의 약 10%, 열 척이 가던 길에 한 척만 가는 수준까지 줄었죠. 미국과 이란은 오만의 중재로 60일 잠정 통항안을 논의하고 있어요. 두 달은 긴 방학 정도의 시간이지만 공장과 선사에는 재고를 다시 채울 귀중한 창문이에요. 멈춰 선 공장에는 하루하루가 급식 재료가 오지 않는 학교처럼 답답한 시간이거든요.\n왜 발표만으로 안심하면 안 될까요? 합의문은 “문을 열겠다”는 약속이고, 실제 물류는 선장이 출항하고 보험사가 위험등급을 낮춰야 움직여요. 시장은 벌써 기대를 앞서 반영했어요. 미국 주식은 기록권에 머물렀고 엔비디아는 하루 3.4%, 100원짜리 물건이 103원 40전이 되는 만큼 올랐죠. 하지만 선박이 돌아오지 않으면 운임과 보험료는 그대로이고, 그 비용은 주유소·항공권·플라스틱 제품 가격으로 번질 수 있어요. 약속과 실행 사이에는 항구, 선원, 보험사라는 세 개의 문이 더 있는 셈이에요.\n이제 봐야 할 숫자는 정상회담 사진보다 구체적이에요. 실제 통항량이 평시의 절반을 넘는지, 전쟁위험 보험료가 내려가는지, 60일 뒤 합의가 연장되는지를 함께 봐야 해요. 한국은 에너지를 대부분 수입하지만 2분기 GDP가 0.6%, 1,000원어치 경제가 6원 늘어난 만큼 성장했고 반도체 수출이 방패가 됐어요. 미래의 컨설턴트라면 “합의됐다”에서 멈추지 않고, 어느 숫자가 얼마까지 움직여야 고객사가 재고를 줄이고 투자를 재개할지 조건을 정해 주는 사람이 되어야 해요.",
  "industry": {
+  "name": "원유·석유화학",
   "valueChain": "산유국 탐사·생산 → 원유 선적·호르무즈 운송 → 정유 → 석유화학·연료 유통 → 제조·소비.",
   "bm": "산유사와 정유사가 원유·연료를 장기계약과 현물로 판매하고, 선사·보험사는 운임과 위험보험료를 받는다.",
   "ksf": "저원가 매장과 안정적 장기계약, 우회 가능한 물류망, 재고·헤지·정제설비 운영력이 승패를 가른다.",
@@ -365,13 +292,14 @@ const BRIEFING = {
 const $ = (s,el=document)=>el.querySelector(s);
 const esc = s => (s==null?"":String(s));
 const nowKST = new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'});
+if(BRIEFING.indices && BRIEFING.indices.length){ $("#indices").innerHTML = BRIEFING.indices.map(x=>{ const n=parseFloat(String(x.changePct).replace(/[^0-9.\-]/g,"")); const dir = n>0?"up":(n<0?"down":"flat"); const arrow = dir==="up"?"▲":(dir==="down"?"▼":"—"); return `<div class="idxcard"><div class="iname2">${esc(x.name)}</div><div class="ival">${esc(x.value)}</div><div class="ichg ${dir}">${arrow} ${esc(x.changePct)}%</div><div class="inote">${esc(x.note||"")}</div></div>`; }).join(""); } else { $("#indices").style.display="none"; }
 $("#meta").innerHTML = `<b><a href="archive.html" style="text-decoration:underline;text-decoration-color:var(--accent-soft)" title="지난 브리핑 모아보기">${esc(BRIEFING.dateLabel)}</a></b><span>·</span><span>${esc(BRIEFING.city||'Seoul')} · ${nowKST} KST 열람</span>`;
 $("#mood").textContent = BRIEFING.mood || "";
 $("#heads").innerHTML = BRIEFING.headliners.map(h=>`<li>${esc(h)}</li>`).join("");
 const cu = BRIEFING.catchup;
 if(cu){ $("#catchup").innerHTML = `<span class="ck">🕰️ 오늘의 따라잡기 — 처음부터 이해하기</span><h3>${esc(cu.topic)}</h3><p class="intro">${esc(cu.intro)}</p><ul class="tl">${(cu.timeline||[]).map(t=>`<li><span class="d">${esc(t.d)}</span>${esc(t.e)}</li>`).join("")}</ul><div class="why">${cu.why||""}</div>`; } else { $("#catchup").style.display="none"; }
 if(BRIEFING.story){ const storyParas = BRIEFING.story.split(/\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join(""); $("#story").innerHTML = `<span class="sk">📖 오늘의 이야기</span>${storyParas}`; } else { $("#story").style.display="none"; }
-const navItems = [...BRIEFING.sections.map(s=>({id:s.id,no:s.no,title:s.title})), ...(BRIEFING.industry ? [{id:"industry",no:"🏭",title:"산업"}] : []), ...(BRIEFING.bcg && BRIEFING.bcg.length ? [{id:"bcg",no:"📘",title:"BCG"}] : []), {id:"think",no:"💭",title:"생각거리"},{id:"cal",no:"📅",title:"일정"}];
+const navItems = [...BRIEFING.sections.map(s=>({id:s.id,no:s.no,title:s.title})), ...(BRIEFING.industry ? [{id:"industry",no:"🏭",title:"산업"}] : []), ...(BRIEFING.bcg && BRIEFING.bcg.length ? [{id:"bcg",no:"📘",title:"BCG"}] : [])];
 $("#nav").innerHTML = navItems.map(n=> `<a href="#${n.id}" data-id="${n.id}"><span class="n">${esc(n.no)}</span>${esc(n.title)}</a>`).join("");
 function srcHtml(s){ if(!s) return ""; const link = s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">원문(${esc(s.date)})↗</a>` : (s.date?` · ${esc(s.date)}`:""); return `<span class="item__src">${esc(s.name)}${link}</span>`; }
 function fieldRow(lab,val,cls){return val?`<div class="field ${cls||""}"><span class="lab">${lab}</span><span class="val">${val}</span></div>`:""}
@@ -379,14 +307,10 @@ function termsRow(terms){ if(!terms||!terms.length) return ""; return `<div clas
 function vocabRow(v){ if(!v) return ""; return `<div class="jword"><span class="jw-badge">🇯🇵 오늘의 비즈니스 일본어</span><span class="jw-text"><b>${esc(v.w)}</b> <span class="jw-r">(${esc(v.r)})</span> — ${esc(v.m)}</span></div>`; }
 function itemCard(it){ return `<article class="item open"><button class="item__head" aria-expanded="true" type="button"><span class="tag">${esc(it.tag)}</span><span><span class="item__title">${esc(it.title)}</span><br>${srcHtml(it.source)}</span><span class="chev">▾</span></button><div class="item__wrap"><div class="item__body"><div class="item__inner">${fieldRow("무슨 일",it.f1)}${fieldRow("그동안의 이야기",it.f2,"story")}${fieldRow("So What",it.f3)}${termsRow(it.terms)}${vocabRow(it.vocab)}</div></div></div></article>`; }
 let html = BRIEFING.sections.map(s=>`<section class="block" id="${s.id}"><div class="shead"><span class="no">${esc(s.no)}</span><h2>${esc(s.title)}</h2><span class="slug">${esc(s.slug)}</span></div>${s.items.map(itemCard).join("")}</section>`).join("");
-if(BRIEFING.industry){ const ind=BRIEFING.industry; const indRows=[["밸류체인",ind.valueChain],["비즈니스모델",ind.bm],["승부 조건",ind.ksf],["최대 이슈",ind.issue]].map(([lab,val])=>fieldRow(lab,esc(val))).join(""); html += `<section class="block" id="industry"><div class="shead"><span class="no">🏭</span><h2>오늘의 산업 한 조각</h2><span class="slug">Industry</span></div><div class="industrycard"><span class="ik">🏭 오늘의 산업 스냅샷</span><div class="ifields">${indRows}</div></div></section>`; }
+if(BRIEFING.industry){ const ind=BRIEFING.industry; const indRows=[["밸류체인",ind.valueChain],["비즈니스모델",ind.bm],["경쟁력 요소",ind.ksf],["최대 이슈",ind.issue]].map(([lab,val])=>fieldRow(lab,esc(val))).join(""); html += `<section class="block" id="industry"><div class="shead"><span class="no">🏭</span><h2>오늘의 산업 소개</h2><span class="slug">Industry</span></div><div class="industrycard"><span class="ik">🏭 오늘의 산업 소개</span><div class="iname">${esc(ind.name||"")}</div><div class="ifields">${indRows}</div></div></section>`; }
 if(BRIEFING.bcg && BRIEFING.bcg.length){ const bcgItems=BRIEFING.bcg.map(b=>`<div class="bcgitem"><div class="btitle">${esc(b.titleKo)}</div><div class="borig">${esc(b.title)}</div><p class="bsum">${esc(b.summary)}</p><div class="bsw"><b>So What</b> — ${esc(b.soWhat)}</div><a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">원문 보기 ↗</a></div>`).join(""); html += `<section class="block" id="bcg"><div class="shead"><span class="no">📘</span><h2>BCG 인사이트</h2><span class="slug">BCG Publications</span></div>${bcgItems}</section>`; }
-if(BRIEFING.think){ const th=BRIEFING.think; const stepsHtml=(th.steps||[]).map(s=>`<li><b>${esc(s.label)}</b> — ${esc(s.detail)}</li>`).join(""); html += `<section class="block" id="think"><div class="think"><span class="tk">💭 오늘의 생각거리 — 컨설턴트처럼 생각하기</span><p>${esc(th.q)}</p><ol class="steps">${stepsHtml}</ol><div class="hint">${th.hint||""}</div></div></section>`; }
-const c = BRIEFING.calendar || {macro:[],earnings:[],sources:[]};
-html += `<section class="block" id="cal"><div class="shead"><span class="no">📅</span><h2>다가오는 일정</h2><span class="slug">watchlist</span></div><div class="terms" style="border-style:solid">${[...(c.macro||[]),...(c.earnings||[])].map(r=>`<div class="t"><b>${esc(r.date)} ${esc(r.reg||"")} ${esc(r.ev)}</b>${r.nt?` — ${esc(r.nt)}`:""}</div>`).join("")}<div class="th" style="margin-top:8px">${esc(c.note||"")}</div></div></section>`;
 $("#main").innerHTML = html;
-const calSrc = (c.sources||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)} ↗</a>`).join(" · ");
-$("#main").insertAdjacentHTML("beforeend",`<footer>소스 정책: Bloomberg · CNBC · BBC · ABC · Reuters · AP + 한국 주요 언론 + 일본 니케이·Japan Times 등 + 컨설팅업계 전문 매체 — 작성 시점 검색·교차 확인 기준.<br>전황·시세는 빠르게 변하므로 중요한 판단 전 원문 확인 권장 · 일정 출처: ${calSrc}<br>💡 매일 아침 9:30 KST에 이 페이지가 자동으로 새 브리핑으로 갱신됩니다. · 📚 <a href="archive.html">지난 브리핑 모아보기</a></footer>`);
+$("#main").insertAdjacentHTML("beforeend",`<footer>소스 정책: BBC · ABC · 조선비즈(산업) · TechCrunch · ZDNet · Gizmodo · 일본 주요 경제매체 · BCG — 작성 시점 검색·교차 확인 기준.<br>전황·시세는 빠르게 변하므로 중요한 판단 전 원문 확인 권장.<br>💡 매일 아침 9:30 KST에 이 페이지가 자동으로 새 브리핑으로 갱신됩니다. · 📚 <a href="archive.html">지난 브리핑 모아보기</a></footer>`);
 document.querySelectorAll(".item__head").forEach(h=>{ h.addEventListener("click",()=>{ const it=h.closest(".item"); const open=it.classList.toggle("open"); h.setAttribute("aria-expanded",open?"true":"false"); }); });
 const allBtn=$("#toggleAll"), allLab=$("#toggleAllLabel");
 allBtn.addEventListener("click",()=>{ const items=[...document.querySelectorAll(".item")]; const anyClosed=items.some(i=>!i.classList.contains("open")); items.forEach(i=>{i.classList.toggle("open",anyClosed); i.querySelector(".item__head").setAttribute("aria-expanded",anyClosed?"true":"false");}); allLab.textContent=anyClosed?"접기":"펼치기"; });
