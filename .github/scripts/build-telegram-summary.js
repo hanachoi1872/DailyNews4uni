@@ -21,13 +21,19 @@ const emojiById = {
   tech: "🤖",
   korea: "🇰🇷",
   japan: "🇯🇵",
-  consulting: "💼",
 };
 
 const lines = [];
 lines.push(`🧭 Daily Compass — ${BRIEFING.dateLabel}`);
 if (BRIEFING.mood) lines.push(BRIEFING.mood);
 lines.push("");
+if (BRIEFING.indices && BRIEFING.indices.length) {
+  const idxLine = BRIEFING.indices
+    .map((x) => `${x.name} ${x.value}(${x.changePct}%)`)
+    .join(" · ");
+  lines.push(`📊 ${idxLine}`);
+  lines.push("");
+}
 (BRIEFING.headliners || []).forEach((h, i) => lines.push(`${i + 1}. ${h}`));
 lines.push("");
 
