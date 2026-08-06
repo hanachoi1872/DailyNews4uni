@@ -57,10 +57,31 @@ jobs:
           git commit -m "Daily update ${{ steps.date.outputs.iso }}"
           git push
 
+      - name: Build Telegram summary
+        shell: powershell
+        run: |
+          node .github/scripts/build-telegram-summary.js
+
       - name: Send Telegram digest
         shell: powershell
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          node .github/scripts/send-telegram.js
+          $text = [System.IO.File]::ReadAllText("$pwd\tg_summary.txt", [System.Text.Encoding]::UTF8)
+          $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $text } | ConvertTo-Json
+          $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
+          $sent = $false
+          for ($i = 1; $i -le 3; $i++) {
+            try {
+              $r = Invoke-RestMethod -Uri $uri -Method Post -Body $body -ContentType "application/json; charset=utf-8" -TimeoutSec 20
+              Write-Host "Telegram sent, message_id=$($r.result.message_id)"
+              $sent = $true
+              break
+            } catch {
+              Write-Host "Attempt $i/3 failed: $($_.Exception.Message)"
+              if ($i -lt 3) { Start-Sleep -Seconds (10 * $i) }
+            }
+          }
+          Remove-Item "tg_summary.txt" -ErrorAction SilentlyContinue
+          if (-not $sent) { exit 1 }
