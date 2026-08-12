@@ -48,6 +48,11 @@ for (const s of BRIEFING.sections || []) {
   lines.push(line);
 }
 
+if (BRIEFING.hkmarket && BRIEFING.hkmarket.topics && BRIEFING.hkmarket.topics.length) {
+  lines.push("");
+  lines.push(`📺 한경코리아마켓: ${BRIEFING.hkmarket.topics.length}개 주제 정리`);
+}
+
 lines.push("");
 lines.push("🔗 전체 보기: https://hanachoi1872.github.io/DailyNews4uni/");
 
