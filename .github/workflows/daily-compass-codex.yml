@@ -36,12 +36,54 @@ jobs:
           $tpl = $tpl -replace "DATE_LABEL_PLACEHOLDER", "${{ steps.date.outputs.label }}"
           [System.IO.File]::WriteAllText("$pwd\codex-prompt-today.txt", $tpl, [System.Text.UTF8Encoding]::new($false))
 
+      - name: Fetch 한경코리아마켓 transcript
+        shell: powershell
+        continue-on-error: true
+        run: |
+          $dateCompact = "${{ steps.date.outputs.iso }}" -replace "-", ""
+          python -m yt_dlp --version *> $null
+          if ($LASTEXITCODE -ne 0) { python -m pip install --quiet --user yt-dlp }
+          $listOutput = python -m yt_dlp --flat-playlist --playlist-end 8 --print "%(id)s`t%(title)s" "https://www.youtube.com/@hk_koreamarket/streams" 2>$null
+          $match = $listOutput | Where-Object { $_ -match $dateCompact } | Select-Object -First 1
+          if (-not $match) {
+            Write-Host "Today's 한경코리아마켓 episode not found yet - skipping hkmarket tab"
+          } else {
+            $videoId = ($match -split "`t")[0]
+            $videoTitle = ($match -split "`t",2)[1]
+            Write-Host "Found today's episode: $videoId - $videoTitle"
+            Remove-Item "hkmarket.ko-orig.srt" -ErrorAction SilentlyContinue
+            python -m yt_dlp --skip-download --write-auto-sub --sub-lang "ko-orig" --sub-format srt -o "hkmarket.%(ext)s" "https://www.youtube.com/watch?v=$videoId" 2>$null
+            if (Test-Path "hkmarket.ko-orig.srt") {
+              $srtContent = [System.IO.File]::ReadAllText("$pwd\hkmarket.ko-orig.srt", [System.Text.Encoding]::UTF8)
+              $blocks = $srtContent -split "`r?`n`r?`n"
+              $lines = @()
+              foreach ($b in $blocks) {
+                $parts = $b -split "`r?`n"
+                if ($parts.Count -ge 3) {
+                  $text = ($parts[2..($parts.Count-1)] -join " ").Trim()
+                  if ($text) { $lines += $text }
+                }
+              }
+              $transcript = $lines -join " "
+              $enc = New-Object System.Text.UTF8Encoding($false)
+              [System.IO.File]::WriteAllText("$pwd\hkmarket-transcript.txt", $transcript, $enc)
+              $meta = @{ videoTitle = $videoTitle; videoUrl = "https://www.youtube.com/watch?v=$videoId"; broadcastLabel = "${{ steps.date.outputs.label }} 8:00 방송" } | ConvertTo-Json
+              [System.IO.File]::WriteAllText("$pwd\hkmarket-meta.json", $meta, $enc)
+              Remove-Item "hkmarket.ko-orig.srt" -ErrorAction SilentlyContinue
+              Write-Host "Transcript saved, length $($transcript.Length)"
+            } else {
+              Write-Host "No captions available yet for today's episode - skipping hkmarket tab"
+            }
+          }
+
       - name: Generate briefing with Codex
         shell: powershell
         run: |
           $prompt = [System.IO.File]::ReadAllText("$pwd\codex-prompt-today.txt", [System.Text.Encoding]::UTF8)
           $prompt | codex exec --sandbox workspace-write -
           Remove-Item "codex-prompt-today.txt"
+          Remove-Item "hkmarket-transcript.txt" -ErrorAction SilentlyContinue
+          Remove-Item "hkmarket-meta.json" -ErrorAction SilentlyContinue
 
       - name: Commit and push
         shell: powershell
