@@ -55,7 +55,14 @@ jobs:
             exit 0
           }
           git commit -m "Daily update ${{ steps.date.outputs.iso }}"
-          git push
+          $pushed = $false
+          for ($i = 1; $i -le 3; $i++) {
+            git push
+            if ($LASTEXITCODE -eq 0) { $pushed = $true; break }
+            Write-Host "Push attempt $i/3 rejected, pulling --rebase and retrying"
+            git pull --rebase origin main
+          }
+          if (-not $pushed) { Write-Host "Push failed after retries"; exit 1 }
 
       - name: Build Telegram summary
         shell: powershell
