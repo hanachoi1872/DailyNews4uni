@@ -53,7 +53,7 @@ jobs:
           fi
 
           rm -f hkmarket.ko-orig.srt
-          python3 -m yt_dlp --skip-download --write-auto-sub --sub-lang ko-orig --sub-format srt -o "hkmarket.%(ext)s" "https://www.youtube.com/watch?v=$VIDEO_ID" || true
+          python3 -m yt_dlp --extractor-args "youtube:player_client=android,web_safari,ios" --skip-download --write-auto-sub --sub-lang ko-orig --sub-format srt -o "hkmarket.%(ext)s" "https://www.youtube.com/watch?v=$VIDEO_ID"
 
           if [ ! -f hkmarket.ko-orig.srt ]; then
             echo "No captions available for $VIDEO_ID. Skipping."
