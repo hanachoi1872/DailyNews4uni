@@ -1,8 +1,10 @@
 name: Fetch 한경코리아마켓 Transcript
 
+# NOTE: schedule disabled — YouTube blocks GitHub-hosted runner IPs with
+# "Sign in to confirm you're not a bot" even with player-client spoofing
+# (confirmed via two live test runs on 2026-08-27). Kept as workflow_dispatch
+# only in case a future fix (e.g. cookie auth) is added.
 on:
-  schedule:
-    - cron: "0 0 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -53,10 +55,10 @@ jobs:
           fi
 
           rm -f hkmarket.ko-orig.srt
-          python3 -m yt_dlp --extractor-args "youtube:player_client=android,web_safari,ios" --skip-download --write-auto-sub --sub-lang ko-orig --sub-format srt -o "hkmarket.%(ext)s" "https://www.youtube.com/watch?v=$VIDEO_ID"
+          python3 -m yt_dlp --extractor-args "youtube:player_client=android,web_safari,ios" --skip-download --write-auto-sub --sub-lang ko-orig --sub-format srt -o "hkmarket.%(ext)s" "https://www.youtube.com/watch?v=$VIDEO_ID" || true
 
           if [ ! -f hkmarket.ko-orig.srt ]; then
-            echo "No captions available for $VIDEO_ID. Skipping."
+            echo "No captions available for $VIDEO_ID (likely YouTube bot-check on this runner's IP). Skipping."
             exit 0
           fi
 
