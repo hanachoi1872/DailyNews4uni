@@ -1,0 +1,108 @@
+name: Fetch 한경코리아마켓 Transcript
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install yt-dlp
+        run: python3 -m pip install --quiet yt-dlp
+
+      - name: Fetch today's transcript (retries for up to ~20 min)
+        run: |
+          set -uo pipefail
+          DATE_ISO=$(TZ='Asia/Seoul' date +%Y-%m-%d)
+          DATE_COMPACT=$(TZ='Asia/Seoul' date +%Y%m%d)
+          echo "Today (KST): $DATE_ISO ($DATE_COMPACT)"
+
+          FOUND=0
+          VIDEO_ID=""
+          VIDEO_TITLE=""
+          for i in 1 2 3 4 5; do
+            echo "Attempt $i/5: listing recent episodes..."
+            LIST=$(python3 -m yt_dlp --flat-playlist --playlist-end 8 --print $'%(id)s\t%(title)s' "https://www.youtube.com/@hk_koreamarket/streams" 2>&1) || true
+            MATCH=$(printf '%s\n' "$LIST" | grep -F "$DATE_COMPACT" | head -1) || true
+            if [ -n "$MATCH" ]; then
+              VIDEO_ID=$(printf '%s' "$MATCH" | cut -f1)
+              VIDEO_TITLE=$(printf '%s' "$MATCH" | cut -f2-)
+              echo "Found: $VIDEO_ID - $VIDEO_TITLE"
+              FOUND=1
+              break
+            fi
+            echo "Not found yet, waiting 5 min..."
+            sleep 300
+          done
+
+          if [ "$FOUND" -ne 1 ]; then
+            echo "No episode found for $DATE_ISO after retries. Skipping."
+            exit 0
+          fi
+
+          rm -f hkmarket.ko-orig.srt
+          python3 -m yt_dlp --skip-download --write-auto-sub --sub-lang ko-orig --sub-format srt -o "hkmarket.%(ext)s" "https://www.youtube.com/watch?v=$VIDEO_ID" || true
+
+          if [ ! -f hkmarket.ko-orig.srt ]; then
+            echo "No captions available for $VIDEO_ID. Skipping."
+            exit 0
+          fi
+
+          python3 - "$VIDEO_ID" "$VIDEO_TITLE" "$DATE_ISO" <<'PYEOF'
+          import sys, re, json, os
+
+          video_id, video_title, date_iso = sys.argv[1], sys.argv[2], sys.argv[3]
+          srt = open("hkmarket.ko-orig.srt", encoding="utf-8").read()
+          blocks = re.split(r"\r?\n\r?\n", srt)
+          lines = []
+          for b in blocks:
+              parts = [p.strip("\r") for p in b.split("\n")]
+              if len(parts) >= 3:
+                  text = " ".join(parts[2:]).strip()
+                  if text:
+                      lines.append(text)
+          transcript = " ".join(lines)
+
+          data = {
+              "date": date_iso,
+              "videoTitle": video_title,
+              "videoUrl": f"https://www.youtube.com/watch?v={video_id}",
+              "transcript": transcript,
+          }
+
+          os.makedirs("hkmarket-data", exist_ok=True)
+          with open("hkmarket-data/latest.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False)
+
+          print(f"Transcript length: {len(transcript)}")
+          PYEOF
+
+          rm -f hkmarket.ko-orig.srt
+
+      - name: Commit and push
+        run: |
+          git config user.name "Daily Compass Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add hkmarket-data/latest.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "hkmarket transcript $(TZ='Asia/Seoul' date +%Y-%m-%d)"
+          for i in 1 2 3; do
+            git push && break
+            echo "Push attempt $i/3 rejected, retrying..."
+            git pull --rebase origin main
+          done
