@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<!--
+  Daily Compass — BRIEFING 데이터 사용법
+  이 파일을 수정할 때는 스타일 정의와 렌더링 스크립트 로직은 건드리지 말고,
+  본문에 있는 실제 BRIEFING 데이터 객체의 값만 매일 새로 채워 넣으세요.
+
+  필수 필드: dateLabel, city, mood, headliners[3], catchup, sections[5], story, industry, bcg
+  탭은 정확히 7개: 세계 / 글로벌 경제·시장 / 한국 경제·시장 / 테크·AI / 일본 경제·시장 / 산업 소개 / BCG 인사이트
+  (생각거리·일정 섹션은 폐지됨 — think/calendar 필드는 더 이상 사용하지 않습니다)
+
+  ▸ indices (선택, array) — 페이지 맨 위 주가지수 바. 없으면 자동으로 숨겨집니다.
+    [{ name: "코스피", value: "3,412.5", changePct: "+1.8", note: "최근 1개월 평균 대비 높은 수준" }, ...]
+
+  ▸ story (필수, string) — "오늘의 이야기". 오늘 다룬 모든 기사를 스토리텔링 형식으로 훑어주는 글.
+    헤드라인 바로 아래에 표시됩니다. 문단을 나누려면 줄바꿈(\n)을 사용하세요.
+
+  ▸ sections[5] — 각 section의 items 배열 안 f1(무슨 일)/f2(그동안의 이야기)/f3(So What)는
+    각각 최소 3~4문장 분량으로 작성합니다 (짧은 한두 줄 요약 금지).
+
+  ▸ industry (필수, object) — "오늘의 산업 소개".
+    { name: "산업 이름", valueChain: "밸류체인 한 줄(MECE)", bm: "비즈니스모델 1~2줄", ksf: "경쟁력 요소 1~2줄", issue: "최대 이슈(주요 플레이어 포함) 1~2줄" }
+
+  ▸ bcg (필수, array, 1개) — "BCG 인사이트".
+    [{ titleKo: "한글 제목", title: "원제", url: "https://www.bcg.com/...", summary: "3~4문장 요약", soWhat: "한 문장 시사점" }]
+
+  ▸ hkmarket (선택, object) — "한경코리아마켓". 유튜브 아침 방송 자막을 주제별로 정리한 8번째 탭.
+    없으면 자동으로 숨겨집니다 (예: 자막 추출 실패, 또는 이 필드를 채우지 않는 발행 경로).
+    { videoTitle: "영상 제목", videoUrl: "https://www.youtube.com/watch?v=...", broadcastLabel: "2026.08.14 (금) 8:00 방송",
+      topics: [{ topic: "주제 제목", detail: "2~4문장 요약" }, ...] }
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Compass — 2026.11.07</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#EBF3FA;--card:#FFFFFF;--ink:#211D2B;--ink-soft:#645C74;--line:#DAD5E2;--accent:#1E7FBF;--accent-ink:#0B4A73;--accent-soft:rgba(30,127,191,.12);--warm:#2E6F95;--warm-soft:rgba(46,111,149,.12);--up:#C4453C;--down:#2B62C9;--flat:#7B7787;--display:'Noto Sans KR','Malgun Gothic',sans-serif;--body:'Noto Sans KR','Malgun Gothic',system-ui,-apple-system,sans-serif;--mono:'Noto Sans KR','Malgun Gothic',sans-serif;--maxw:860px;}
+  [data-theme="dark"]{--paper:#131019;--card:#1C1826;--ink:#EDE9F4;--ink-soft:#A79FBA;--line:#322B42;--accent:#7DD3FC;--accent-ink:#7DD3FC;--accent-soft:rgba(125,211,252,.14);--warm:#E39358;--warm-soft:rgba(227,147,88,.13);--up:#F0736A;--down:#6E9BEF;--flat:#8D889B;}
+  *{box-sizing:border-box} html{scroll-behavior:smooth} @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.66;-webkit-font-smoothing:antialiased} a{color:inherit} .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .masthead{padding:36px 0 20px;border-bottom:2.5px solid var(--ink)} .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;display:flex;gap:10px;align-items:center} .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2.6s ease-in-out infinite} @media (prefers-reduced-motion:reduce){.eyebrow .dot{animation:none}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .title{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,56px);line-height:1.05;letter-spacing:-.01em;margin:12px 0 0} .title .amp{color:var(--accent-ink)}
+  .meta{margin-top:12px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center} .meta b{color:var(--ink);font-weight:600}
+  .mood{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 13px;border:1.5px solid var(--accent);border-radius:999px;background:var(--accent-soft);font-size:13px;font-weight:700}
+  .lead{margin:20px 0 6px;padding:17px 20px 18px;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 10px 10px 0} .lead .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  .heads{margin:10px 0 0;padding:0;list-style:none;counter-reset:h;display:grid;gap:9px} .heads li{position:relative;padding-left:32px;font-family:var(--display);font-weight:700;font-size:15.5px;line-height:1.45} .heads li::before{counter-increment:h;content:counter(h);position:absolute;left:0;top:2px;font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent-ink);border:1px solid var(--accent-ink);border-radius:5px;width:20px;height:20px;display:grid;place-items:center}
+  .catchup{margin:18px 0 0;background:var(--card);border:1.5px solid var(--warm);border-radius:14px;padding:18px 20px} .catchup .ck{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--warm);font-weight:700} .catchup h3{margin:7px 0 4px;font-family:var(--display);font-size:19px;font-weight:800} .catchup .intro{margin:0 0 12px;font-size:13.5px;color:var(--ink-soft)}
+  .tl{margin:0;padding:0;list-style:none;border-left:2px solid var(--warm);margin-left:6px} .tl li{position:relative;padding:0 0 12px 18px;font-size:13.5px} .tl li::before{content:"";position:absolute;left:-6px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--paper);border:2.5px solid var(--warm)} .tl .d{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--warm);display:block}
+  .catchup .why{margin:12px 0 0;padding:11px 13px;background:var(--warm-soft);border-radius:9px;font-size:13.5px} .catchup .why b{color:var(--warm)}
+  nav.bar{position:sticky;top:0;z-index:30;margin-top:20px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper) 88%, transparent);backdrop-filter:blur(10px)} .bar__in{max-width:var(--maxw);margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:8px}
+  .navlinks{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1} .navlinks::-webkit-scrollbar{display:none} .navlinks a{flex:0 0 auto;text-decoration:none;font-size:13px;font-weight:600;color:var(--ink-soft);padding:6px 11px;border-radius:8px;white-space:nowrap} .navlinks a .n{font-family:var(--mono);color:var(--accent-ink);margin-right:5px;font-size:11.5px} .navlinks a:hover{background:var(--accent-soft);color:var(--ink)} .navlinks a.active{background:var(--ink);color:var(--paper)} .navlinks a.active .n{color:var(--paper)}
+  .tools{display:flex;gap:6px} .tools button{font-family:var(--body);font-size:12.5px;font-weight:600;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;cursor:pointer} .tools button:hover{color:var(--ink);border-color:var(--accent)} .tools button:focus-visible,.navlinks a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .block{padding:26px 0 4px} .shead{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px} .shead .no{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent-ink)} .shead h2{font-family:var(--display);font-weight:800;font-size:21px;margin:0} .shead .slug{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden} .item__head{width:100%;display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:none;border:0;cursor:pointer;text-align:left;font-family:var(--body);color:var(--ink)} .tag{flex:0 0 auto;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink);margin-top:2px} .item__title{font-weight:700;font-size:15px;line-height:1.45} .item__src{font-family:var(--mono);font-size:11px;color:var(--ink-soft)} .item__src a{color:var(--accent-ink)} .chev{margin-left:auto;flex:0 0 auto;color:var(--ink-soft);transition:transform .2s} .item.open .chev{transform:rotate(180deg)}
+  .item__wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .24s ease} .item.open .item__wrap{grid-template-rows:1fr} .item__body{overflow:hidden} .item__inner{padding:2px 15px 15px;display:grid;gap:9px}
+  .field{display:grid;grid-template-columns:92px 1fr;gap:10px;font-size:13.5px} .field .lab{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--accent-ink);padding-top:3px} .field.story .lab{color:var(--warm)} .field.story .val{background:var(--warm-soft);border-radius:8px;padding:9px 11px} .field .val b{color:var(--accent-ink)} @media (max-width:520px){.field{grid-template-columns:1fr}.field .lab{padding-top:0}}
+  .terms{margin-top:2px;padding:10px 12px;border:1px dashed var(--line);border-radius:9px;background:color-mix(in srgb,var(--paper) 55%, transparent)} .terms .th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:5px} .terms .t{font-size:12.8px;color:var(--ink-soft);line-height:1.6;margin:2px 0} .terms .t b{color:var(--ink);font-weight:700}
+  .jword{margin-top:2px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap} .jword .jw-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent-ink);white-space:nowrap} .jword .jw-text{font-size:13px;color:var(--ink);line-height:1.6} .jword .jw-text b{font-family:var(--display);font-size:15px} .jword .jw-r{color:var(--ink-soft);font-size:12px}
+  footer{margin:34px 0 46px;padding-top:14px;border-top:2.5px solid var(--ink);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.8} footer a{color:var(--accent-ink)} @media print{nav.bar{display:none} .item__wrap{grid-template-rows:1fr!important}}
+  .dailystory{margin:18px 0 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px} .dailystory .sk{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .dailystory p{margin:12px 0 0;font-size:15.5px;line-height:1.9;color:var(--ink)} .dailystory p:first-of-type{margin-top:10px}
+  .industrycard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px} .industrycard .ik{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .industrycard .iname{margin:8px 0 0;font-family:var(--display);font-size:19px;font-weight:800} .industrycard .ifields{margin-top:12px;display:grid;gap:9px}
+  .idxbar{max-width:var(--maxw);margin:0 auto;padding:12px 20px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none} .idxbar::-webkit-scrollbar{display:none}
+  .idxcard{flex:0 0 auto;min-width:128px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .idxcard .iname2{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);font-weight:600}
+  .idxcard .ival{font-family:var(--display);font-weight:800;font-size:16px;margin-top:2px}
+  .idxcard .ichg{font-family:var(--mono);font-size:12px;font-weight:700;margin-top:2px}
+  .idxcard .ichg.up{color:var(--up)} .idxcard .ichg.down{color:var(--down)} .idxcard .ichg.flat{color:var(--flat)}
+  .idxcard .inote{font-size:11px;color:var(--ink-soft);margin-top:4px;line-height:1.4;max-width:160px}
+  .bcgitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:10px} .bcgitem .btitle{font-family:var(--display);font-weight:700;font-size:15.5px} .bcgitem .borig{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-style:italic} .bcgitem .bsum{margin:9px 0 0;font-size:13.5px;line-height:1.7;color:var(--ink)} .bcgitem .bsw{margin-top:9px;padding:9px 11px;background:var(--accent-soft);border-radius:8px;font-size:12.8px} .bcgitem .bsw b{color:var(--accent-ink)} .bcgitem .blink{margin-top:9px;display:inline-block;font-family:var(--mono);font-size:11.5px;color:var(--accent-ink);text-decoration:none}
+  .hkmeta{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;font-size:13px;color:var(--ink-soft)} .hkmeta a{color:var(--accent-ink);font-weight:600}
+  .hktopic{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px} .hktopic .httl{font-family:var(--display);font-weight:700;font-size:14.5px} .hktopic .hdet{margin-top:6px;font-size:13.3px;line-height:1.7;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="idxbar" id="indices"></div>
+<div class="wrap"><header class="masthead"><div class="eyebrow"><span class="dot"></span>WORLD · ECONOMY · TECH — 매일 아침 5분</div><h1 class="title">Daily <span class="amp">Compass</span></h1><div class="meta" id="meta"></div><div class="mood" id="mood"></div><div class="lead"><span class="k">오늘의 3분 — 이것만 읽어도 OK</span><ol class="heads" id="heads"></ol></div><div class="dailystory" id="story"></div><div class="catchup" id="catchup"></div></header></div>
+<nav class="bar"><div class="bar__in"><div class="navlinks" id="nav"></div><div class="tools"><button id="toggleAll" type="button">전체 <span id="toggleAllLabel">접기</span></button><button id="theme" type="button" aria-label="테마 전환">◐</button><button id="print" type="button" aria-label="인쇄">⏏</button></div></div></nav>
+<main class="wrap" id="main"></main>
+<script>
+const BRIEFING = {
+  "indices": [
+    {
+      "name": "코스피",
+      "value": "5,059.69",
+      "changePct": "-6.02",
+      "note": "전날 서킷브레이커로 5000선이 무너졌던 충격에서 장중 저가 매수로 5000선을 되찾았지만, 종가는 결국 2거래일 연속 급락 마감"
+    },
+    {
+      "name": "코스닥",
+      "value": "644.27",
+      "changePct": "-5.03",
+      "note": "코스피와 동반 하락, 외국인 소폭 순매도에도 기관이 순매수에 나서며 추가 급락은 막음"
+    },
+    {
+      "name": "나스닥",
+      "value": "24,579.40",
+      "changePct": "+1.09",
+      "note": "전 거래일(11/5) 5.52% 급락 후 저가 매수로 반등 — 이틀간 빠진 폭의 일부만 회복한 수준"
+    },
+    {
+      "name": "다우존스",
+      "value": "51,285.73",
+      "changePct": "-0.46",
+      "note": "전 거래일(11/5) 3.44% 급락에 이어 추가 하락 — 고용지표 호조에도 금리 부담이 반도체·AI주 약세를 못 막음"
+    },
+    {
+      "name": "닛케이225",
+      "value": "57,434.77",
+      "changePct": "-5.96",
+      "note": "하루 하락폭 역대 3위, 6월 사상 최고치 대비 20% 넘게 밀려 기술적 '약세장' 진입"
+    }
+  ],
+  "dateLabel": "2026년 11월 7일 (토)",
+  "city": "Seoul",
+  "mood": "미국 중간선거 후폭풍이 '트럼프의 이란 공습 결정'과 'AI 투자 재검토'라는 두 갈래로 번지며 세계 증시를 흔들었고, 그 와중에도 테슬라와 소니는 각자 다음 승부수(로보택시·콘텐츠 IP)를 던진 하루였어요.",
+  "headliners": [
+    "미국 중간선거에서 민주당이 상원 54석 이상을 확보하며 승리 의석을 계속 늘렸고, 트럼프 대통령은 이란 문제에서 '내가 맞았다'고 주장했지만 정작 공습 재개 결정은 네타냐후의 압박과 참모진의 협상론 사이에서 미루고 있어요.",
+    "월가의 공포지수(VIX)가 하루 만에 70% 치솟아 28까지 오르며 투자자들이 AI 투자 열풍 자체를 재검토하기 시작했고, 그 충격에 코스피는 장중 13~15%까지 급락했던 삼성전자·SK하이닉스의 낙폭을 겨우 5%대로 줄이면서도 결국 6.02% 하락한 5059.69로 마감했어요.",
+    "테슬라는 사이버트럭 생산을 2027년 중단하고 로보택시 '사이버캡'에 승부를 걸기로 했고, 소니는 영화 '스파이더맨'과 게임 흥행에 힘입어 연간 순이익 전망을 1조3300억엔으로 올려잡았어요."
+  ],
+  "catchup": {
+    "topic": "이란-이스라엘-미국 전쟁 타임라인 — 트럼프의 '곧' 결정, 언제 내려질까",
+    "intro": "어제 브리핑에서 미국 중간선거 패배가 트럼프를 보는 세계의 시선을 바꿀 수 있다는 분석까지 짚었는데, 바로 다음 날에도 트럼프 대통령은 이란 공습 재개 여부를 두고 여전히 결정을 내리지 못하고 있어요. 오늘 세계 뉴스에서 다룬 '트럼프가 이란 문제에서 내가 맞았다고 주장하면서도 정작 결정은 미루고 있다'는 대목이 어떤 흐름 속에 있는지, 타임라인을 이어서 짚어볼게요.",
+    "timeline": [
+      {
+        "d": "2026.02.28",
+        "e": "트럼프 대통령이 이란에 대한 대규모 전투작전 개시를 발표했고, 미국과 이스라엘 군이 이란의 군사·정부·기반시설을 겨냥해 대규모 합동 공습을 가하며 전쟁이 시작됐어요."
+      },
+      {
+        "d": "2026.04~06",
+        "e": "미국의 중재로 휴전이 선언됐다가 이란의 보복 미사일 발사로 재충돌하는 등 공습과 휴전이 반복됐고, 6월 말에는 호르무즈 해협 통행을 허용하는 선에서 양측이 공습을 멈추기로 합의했어요."
+      },
+      {
+        "d": "2026.10.22~11.02",
+        "e": "미국과 이스라엘 군이 중간선거 이후 이란을 다시 공습할 계획을 마련해둔 것으로 전해졌고, 네타냐후 총리가 트럼프 대통령에게 중간선거 이후 공습 재개를 압박한 것으로 알려졌어요."
+      },
+      {
+        "d": "2026.11.03~05",
+        "e": "미국 중간선거에서 민주당이 상·하원을 장악하는 압승을 거뒀고, 밴스 부통령과 트럼프 대통령 모두 이란 전쟁을 패배 원인으로 지목했어요. ABC뉴스는 이 결과로 트럼프를 대하는 세계의 시선이 달라질 수 있다고 분석했어요."
+      },
+      {
+        "d": "2026.11.05",
+        "e": "트럼프 대통령이 국가안보팀과 회의를 가진 뒤 이란 공습 재개 여부를 '곧' 결정하겠다고 밝혔어요. 액시오스는 그가 ①공습 재개 ②경제적 압박 지속 ③상당한 양보가 포함된 협상 체결, 세 가지 선택지를 놓고 고민하고 있다고 전했어요."
+      },
+      {
+        "d": "2026.11.05",
+        "e": "트럼프 대통령은 파이낸셜타임스와의 인터뷰에서 이란에 대한 새로운 공습을 당장 명령할 계획은 없다고 말했어요. 다만 이란이 핵무기 프로그램을 재건하지 못하게 막아야 한다는 원칙은 고수했고, 같은 결정을 다시 내려도 그렇게 하겠다고 말했어요."
+      },
+      {
+        "d": "2026.11.05~06",
+        "e": "네타냐후 총리는 중간선거가 끝나자마자 이란 공습 재개를 압박하고 있는 것으로 전해졌어요. 반면 밴스 부통령을 비롯한 일부 참모진은 협상을 통한 종전을 권고하고 있어, 트럼프 행정부 내부에서도 의견이 엇갈리고 있어요."
+      },
+      {
+        "d": "2026.11.06",
+        "e": "ABC뉴스는 밴스 부통령이 2024년 트럼프-밴스 티켓에 투표했던 유권자들이 이번엔 민주당에 투표한 이유 네 가지 중 하나로 '이란 전쟁 종식'을 꼽았다고 전했어요. CNBC 유권자 여론조사에서도 투표자의 74%가 이란 문제를 의회 선거의 핵심 요인으로 꼽은 것으로 나타났어요."
+      },
+      {
+        "d": "2026.11.06",
+        "e": "미 당국자에 따르면 항공모함 시어도어 루스벨트 전단이 중부사령부 관할 구역에 도착하는 시점은 11월 중순으로 예정돼 있어, 트럼프 대통령이 당장 공습을 결심해도 실제 전력이 갖춰지는 데는 시간이 더 필요한 상황이에요."
+      }
+    ],
+    "why": "<b>컨설턴트 관점</b> 트럼프 대통령은 '내가 맞았다'며 기존 결정을 정당화하면서도, 정작 다음 결정(공습 재개 여부)은 네타냐후의 압박과 참모진의 협상론 사이에서 미루고 있어요. 그런데 이 결정을 실제로 강제하는 건 여론이나 압박이 아니라, 공습에 필요한 항모 전단이 11월 중순에야 도착한다는 '물리적 준비 시점'이에요. 컨설팅 관점에서는 의사결정자의 선택을 예측할 때 그가 받는 정치적 압력의 방향뿐 아니라, 그 결정을 실행에 옮기는 데 필요한 물리적·운영적 준비 시간까지 함께 캘린더에 표시해둬야 실제 행동 시점을 더 정확하게 예측할 수 있다는 시사점을 얻을 수 있어요."
+  },
+  "sections": [
+    {
+      "id": "world",
+      "no": "01",
+      "title": "세계",
+      "slug": "World",
+      "items": [
+        {
+          "tag": "美중간선거민주당의석확대트럼프이란발언공습결정지연",
+          "title": "美 중간선거 민주당 의석 더 늘려…트럼프 '이란, 내가 맞았다' 주장",
+          "source": {
+            "name": "ABC News",
+            "url": "https://www.abc.net.au/news/2026-11-06/us-midterm-elections-2026-live-updates/107351586",
+            "date": "2026.11.06"
+          },
+          "f1": "ABC뉴스는 11월 6일(현지시간) 라이브 업데이트를 통해, 11월 3~4일 치러진 미국 중간선거에서 민주당이 상·하원을 모두 장악한 데 이어 이후에도 승리 의석을 계속 늘려가고 있다고 전했어요. 매체는 민주당이 상원에서 최소 54석을 확보한 것으로 집계됐고, 미시시피·알래스카 등 일부 지역은 아직 개표가 진행 중이라고 전했어요. 매체는 같은 날 트럼프 대통령이 자신의 소셜미디어에 이란 문제에 대해 '내가 맞았다(right on Iran)'는 취지의 글을 올렸다고 보도했어요. 매체는 JD 밴스 부통령이 2024년 트럼프-밴스 티켓에 투표했던 유권자들이 올해는 민주당에 투표한 이유를 네 가지로 짚었는데, 그중 하나가 '이란 전쟁 종식'이었다고 전했어요.",
+          "f2": "매체는 CNBC 유권자 여론조사를 인용해, 이번 중간선거에서 투표한 유권자 중 74%가 이란 문제를 의회 선거 투표에 있어 '결정적이거나 중요한' 요인으로 꼽았다고 전했어요. 매체는 트럼프 대통령이 이미 전날인 11월 5일 국가안보팀과 회의를 가진 뒤 이란 공습 재개 여부를 '곧' 결정하겠다고 말했다고 덧붙였어요. 매체는 네타냐후 이스라엘 총리가 중간선거가 끝나자마자 이란 공습 재개를 압박하고 있다고 전했고, 동시에 밴스 부통령을 비롯한 일부 참모는 협상을 통한 종전을 권고하고 있다고 보도했어요. 매체는 이런 가운데 미 항공모함 시어도어 루스벨트 전단이 중부사령부 관할 구역에 도착하는 시점이 11월 중순으로 예정돼 있어, 트럼프가 공습을 결심해도 당장 실행할 전력이 갖춰지지 않은 상태라고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 선거에서 패배 원인으로 지목된 전쟁이 선거가 끝난 뒤에도 승자와 패자 모두의 다음 행동을 계속 제약한다는 점이에요. 트럼프 대통령은 '내가 맞았다'고 주장하면서도 정작 공습 재개는 결정하지 못하고 있는데, 이는 여론(유권자의 74%가 이란을 핵심 요인으로 꼽음)과 참모진 내부 의견(네타냐후식 강경 대응 對 밴스식 협상)이 정반대 방향으로 그를 끌어당기고 있기 때문이에요. 컨설팅 관점에서는 의사결정자가 상충하는 압력 속에서 결정을 미룰 때, 그 결정을 실제로 강제하는 건 여론이나 압박이 아니라 '실행 가능한 시점'(항모 전단 도착이 11월 중순) 같은 물리적 제약이라는 점을 기억해야 다음 전환점을 더 정확히 예측할 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "econ",
+      "no": "02",
+      "title": "글로벌 경제·시장",
+      "slug": "Economy",
+      "items": [
+        {
+          "tag": "월가공포지수VIX급등AI투자재검토기술주급락",
+          "title": "美 증시 '공포지수' 하루 만에 70% 급등…월가, AI 투자 재검토 들어가나",
+          "source": {
+            "name": "ABC News",
+            "url": "https://www.abc.net.au/news/2026-11-06/wall-street-sees-tech-sell-off-as-investors-rethink-ai-trade/107354110",
+            "date": "2026.11.06"
+          },
+          "f1": "ABC뉴스는 11월 6일, 월가의 공포지수로 불리는 변동성지수(VIX)가 하루 사이 약 70% 뛰어올라 28선까지 치솟았다고 보도했어요. 매체는 통상 VIX가 30을 넘으면 시장이 매우 불안한 상태로 분류된다고 설명하며, 이번 상승이 그 임계값에 바로 못 미치는 수준까지 올라온 것이라고 전했어요. 매체는 이런 변동성 급등이 전날인 11월 5일 나스닥종합지수가 다시 4%가량 떨어지며 반도체·데이터센터 관련주를 끌어내린 여파라고 설명했어요. 매체는 이번 매도세가 바로 전날(11월 4일) 투자자들이 민주당의 압승을 별일 아닌 듯 넘기며 증시가 올랐던 분위기와 완전히 대조된다고 지적했어요.",
+          "f2": "매체는 블룸버그 집계를 인용해 이날 기술주들이 2020년 이후 최대폭으로 급락했다고 전했어요. 매체는 전문가 분석을 토대로, 이번 매도세의 상당 부분이 전날 반등장에서 과도하게 쏠렸던 AI 관련주에 대한 차익실현과 되돌림이라는 해석도 소개했어요. 매체는 하이퍼스케일러들이 데이터센터 건설에 쏟아붓는 지출 속도를 두고, 그 투자금 회수(ROI)가 실제로 가능할지에 대한 의구심이 커지고 있다고 전했어요. 매체는 호주에서도 데이터센터 운영사들이 올해 들어 지금까지 350억 달러라는 역대 최대 규모의 자금을 조달했다는 점, 그리고 호주중앙은행(RBA) 총재가 전 세계 중앙은행들이 AI 투자 거품 위험을 주시하고 있다고 언급한 점도 함께 짚었어요.",
+          "f3": "이 사례가 보여주는 건, 시장이 AI 투자를 바라보는 시선이 '얼마나 많이 투자하는가'에서 '그 투자가 실제로 돈이 되는가'로 빠르게 옮겨가고 있다는 점이에요. VIX가 임계값에 근접했다는 사실 자체가, 투자자들이 이제 이 매도세를 단순한 하루짜리 변동성이 아니라 더 긴 하락장의 시작일 수도 있다고 의심하기 시작했다는 신호예요. 컨설팅 관점에서는 대규모 설비투자가 계속되는 산업을 분석할 때, 투자 금액의 크기 자체보다 '그 투자금을 회수할 수 있다는 확신이 시장에서 흔들리는 시점'을 포착하는 게 다음 국면 전환을 예측하는 데 더 중요한 신호라는 시사점을 얻을 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "korea",
+      "no": "03",
+      "title": "한국 경제·시장",
+      "slug": "Korea",
+      "items": [
+        {
+          "tag": "코스피급락마감외국인순매도반도체2차전지동반하락",
+          "title": "코스피, 급락 출발 뒤 6.02% 하락한 5059.69로 마감",
+          "source": {
+            "name": "뉴스1",
+            "url": "https://www.newspim.com/news/view/20261106000997",
+            "date": "2026.11.06"
+          },
+          "f1": "뉴스1은 11월 6일, 코스피가 전 거래일보다 324.11포인트(6.02%) 내린 5059.69에 거래를 마쳤다고 보도했어요. 매체는 코스닥 역시 전 거래일보다 34.14포인트(5.03%) 떨어진 644.27으로 장을 마쳤다고 전했어요. 매체는 코스피가 장 초반 8%대 급락하며 1단계 서킷브레이커가 발동됐을 만큼 출발이 좋지 않았지만, 종가 기준으로는 그보다 낙폭을 다소 줄인 채 마감했다고 설명했어요. 매체는 이날 하루 동안 외국인이 코스피에서만 2조7690억원어치를 순매도했다고 전했어요.",
+          "f2": "매체는 반면 기관투자자는 코스피에서 1조7000억원을 순매수하며 저가 매수에 나섰다고 전했어요. 코스닥에서는 외국인이 1000억원 순매도한 반면 기관은 순매수를 보이며 엇갈린 수급을 보였다고 매체는 덧붙였어요. 매체는 이번 급락의 원인으로 ①미국 AI·반도체주 급락, ②미국의 AI 데이터센터 규제 강화 우려, ③외국인의 대규모 매도에 따른 투자심리 악화 등 세 가지를 꼽았어요. 매체는 2차전지 소재 종목인 에코프로(-5.49%)와 에코프로비엠(-7.80%)도 동반 하락하며 반도체주 외의 다른 업종으로도 매도세가 확산했다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 외국인과 기관이 정반대 방향으로 움직이는 수급 엇박자 속에서도 지수는 결국 외국인 매도 규모(2.7조원)를 기관 매수(1.7조원)가 다 받아내지 못해 하락 마감했다는 점이에요. 반도체주로 시작된 매도세가 2차전지 소재주까지 끌어내렸다는 사실은, 특정 섹터의 충격이 관련 없어 보이는 다른 성장주로도 전이될 수 있다는 걸 보여줘요. 컨설팅 관점에서는 특정 산업의 리스크를 평가할 때, 그 산업과 직접 관련된 종목만이 아니라 같은 성격(고밸류에이션 성장주)을 공유하는 다른 산업까지 함께 묶어 리스크를 측정해야 전이 효과를 놓치지 않을 수 있어요."
+        },
+        {
+          "tag": "코스피장중5000붕괴저가매수삼성전자SK하이닉스낙폭축소",
+          "title": "장중엔 5000선 붕괴까지…저가 매수에 삼전·하이닉스 낙폭 5%대로 줄여",
+          "source": {
+            "name": "뉴데일리",
+            "url": "https://biz.newdaily.co.kr/site/data/html/2026/11/06/2026110600120.html",
+            "date": "2026.11.06"
+          },
+          "f1": "뉴데일리는 11월 6일, 코스피가 개장 초반 13~15%까지 급락했던 삼성전자와 SK하이닉스가 오전 장중 저가 매수세가 유입되며 낙폭을 5%대로 줄였다고 보도했어요. 매체는 이 과정에서 코스피 지수 자체도 한때 5000선이 무너지는 수모를 겪었지만, 저가 매수세가 살아나며 오전 중 5000선을 다시 회복했다고 전했어요. 매체는 이날 아침 서킷브레이커가 발동될 정도로 급격했던 초반 패닉셀링이, 시간이 지나면서 '싸졌을 때 사자'는 저가 매수 수요와 맞물려 진정되는 흐름을 보였다고 설명했어요. 매체는 이런 흐름이 삼성전자·SK하이닉스 등 반도체 대형주를 중심으로 두드러졌다고 덧붙였어요.",
+          "f2": "매체는 이날 오전 한때 삼성전자와 SK하이닉스의 주가 하락률이 13~15%에 달했다고 전했는데, 이는 전날 미국에서 반도체·AI주가 급락한 충격이 그대로 반영된 수치라고 설명했어요. 매체는 이렇게 급격했던 낙폭이 장중 저가 매수세 유입만으로 5%대까지 절반 가까이 줄어든 점을 두고, 시장에 '패닉에 가까운 급락은 과도하다'고 판단한 매수 주체가 존재했다는 신호로 풀이했어요. 매체는 다만 이런 반등에도 코스피가 결국 종가 기준으로는 6%대 하락을 피하지 못했다는 점도 함께 짚었어요. 매체는 이번 사례가 올해 벌써 10번째로 발동된 서킷브레이커의 연장선에 있다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 똑같은 급락이라도 장중 변동성과 종가 기준 하락률 사이에는 큰 차이가 날 수 있다는 점이에요. 아침엔 13~15%까지 빠졌다가 저가 매수로 5%대까지 낙폭을 줄인 흐름은, 시장 안에 '지금이 바닥에 가깝다'고 보는 투자자와 '아직 더 팔아야 한다'고 보는 투자자가 하루 안에도 치열하게 맞붙고 있다는 뜻이에요. 컨설팅 관점에서는 급락장에서 저가 매수가 들어오는 시점과 규모를 추적하면, 시장이 그 충격을 일시적 패닉과 구조적 펀더멘털 악화 중 어느 쪽으로 더 많이 해석하고 있는지를 가늠할 수 있다는 시사점을 얻을 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "tech",
+      "no": "04",
+      "title": "테크·AI",
+      "slug": "Tech & AI",
+      "items": [
+        {
+          "tag": "테슬라사이버트럭생산중단2027로보택시사이버캡전환",
+          "title": "테슬라, 2027년 사이버트럭 생산 중단…로보택시 '사이버캡'에 승부수",
+          "source": {
+            "name": "TechCrunch",
+            "url": "https://techcrunch.com/2026/11/06/tesla-will-stop-making-the-cybertruck-in-2027/",
+            "date": "2026.11.06"
+          },
+          "f1": "테크크런치는 11월 6일, 일론 머스크 테슬라 최고경영자가 자신의 SNS X에 테슬라가 2027년 중반쯤 텍사스주 기가팩토리에서 사이버트럭 생산을 중단하겠다고 밝혔다고 보도했어요. 매체는 머스크가 그 생산 라인 공간을 로보택시(무인 자율주행 택시) 전용 모델인 '사이버캡' 생산 확대에 쓰겠다고 설명했다고 전했어요. 매체는 2019년 사이버트럭을 처음 공개했을 때 머스크가 연간 약 25만 대 판매를 목표로 제시했지만, 실제로는 지난 3년간 누적 판매량이 그에 크게 못 미치는 수만 대에 그쳤다고 지적했어요. 매체는 이번 결정이 사실상 사이버트럭이라는 제품 자체의 흥행 실패를 테슬라가 인정한 조치라는 분석도 함께 전했어요.",
+          "f2": "매체는 테슬라가 기존 사이버트럭 소유자들에게는 부품 공급과 애프터서비스를 계속 제공하겠다고 밝혔지만, 그 기간을 구체적으로 명시하지는 않았다고 전했어요. 매체는 텍사스 기가팩토리가 사이버트럭을 생산하는 유일한 공장이기 때문에, 생산을 다른 곳으로 옮길 가능성은 낮아 보인다고 설명했어요. 매체는 테슬라가 이미 로보택시 서비스를 일부 도시에서 시험 운행하고 있지만, 구글 자회사 웨이모가 여러 도시에서 상업 운행을 하고 있는 것과 비교하면 아직 한참 뒤처져 있다고 지적했어요. 매체는 이번 발표가 테슬라가 전기 픽업트럭 제조사에서 로보택시 플랫폼 기업으로 정체성을 바꾸려는 신호로 읽힌다고 평가했어요.",
+          "f3": "이 사례가 보여주는 건, 테슬라가 야심차게 내놓은 신제품이 목표치의 일부에도 못 미치는 실패로 끝났을 때, 그 생산설비를 다음 베팅(로보택시)에 그대로 재투입하는 손절 후 재배치 전략을 택했다는 점이에요. 사이버트럭이 연 25만 대 목표의 일부에도 못 미치는 수만 대 판매에 그쳤다는 숫자는, 화제성이 컸던 제품도 실제 수요로 이어지지 않으면 결국 생산라인 자체가 다른 사업으로 전환될 수 있다는 걸 보여줘요. 컨설팅 관점에서는 신사업에 설비를 투자할 때, 그 설비가 '이 제품이 실패하면 어떤 다른 제품으로 전환할 수 있는가' 하는 유연성까지 함께 설계해야, 실패 비용을 다음 성장 동력으로 흡수할 수 있다는 시사점을 얻을 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "japan",
+      "no": "05",
+      "title": "일본 경제·시장",
+      "slug": "Japan",
+      "items": [
+        {
+          "tag": "소니스파이더맨게임호조순이익전망상향",
+          "title": "소니, '스파이더맨'·게임 호조에 연간 순이익 전망 1조3300억엔으로 상향",
+          "source": {
+            "name": "Nikkei Asia",
+            "url": "https://asia.nikkei.com/business/companies/sony-raises-annual-profit-forecast-on-spider-man-hit-gaming-gains",
+            "date": "2026.11.05"
+          },
+          "f1": "니케이아시아는 11월 5일, 소니그룹이 2027년 3월 결산 연간 순이익 전망을 기존 1조2100억엔에서 1조3300억엔으로, 영업이익 전망은 1조7200억엔에서 1조8700억엔으로 각각 상향했다고 보도했어요. 매체는 소니의 2분기(7~9월) 영업이익이 6223억엔으로, 애널리스트 12명의 평균 전망치였던 5050억엔을 훌쩍 뛰어넘었다고 전했어요. 매체는 지지통신을 인용해 상반기(4~9월) 매출과 영업이익, 순이익이 모두 역대 최고치를 기록했다고 덧붙였어요. 매체는 이런 실적 호조의 핵심 배경으로 영화 '스파이더맨: 브랜드 뉴 데이'의 흥행과 게임 사업의 성장을 꼽았어요.",
+          "f2": "매체는 소니의 영화 부문 매출이 전년 동기 대비 48% 늘었는데, 이는 전 세계 박스오피스에서 약 25억 달러를 벌어들인 '스파이더맨: 브랜드 뉴 데이' 덕분이라고 설명했어요. 매체는 게임 부문 매출도 9% 늘었는데, '마블의 울버린'이 11월 초 기준 240만 장이 팔렸다고 전했어요. 다만 매체는 플레이스테이션5 본체 판매량이 1년 전 400만 대에서 260만 대로 줄어든 점, 그리고 AI 붐으로 치솟은 메모리 반도체 가격이 비용 부담으로 작용하고 있는 점은 소니에게 부담 요인이라고 지적했어요. 매체는 11월 19일 출시될 'GTA6(그랜드 테프트 오토6)'가 게임 부문의 추가 성장을 이끌 것으로 기대된다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 소니처럼 영화·음악·게임 같은 콘텐츠 지식재산권(IP)을 여러 개 들고 있는 회사는 하나의 사업(하드웨어 판매)이 둔화해도 다른 사업(흥행 영화)이 그 공백을 메워줄 수 있다는 점이에요. PS5 본체 판매가 꺾였는데도 전체 실적이 오히려 상향된 건, 소니의 수익구조가 기기 판매 한 가지에 의존하지 않고 영화·게임 IP로 분산돼 있기 때문이에요. 컨설팅 관점에서는 콘텐츠·IP 기반 기업을 평가할 때 특정 히트작 하나의 성과보다, 그 회사가 여러 IP 포트폴리오에 걸쳐 흥행 리스크를 분산시킬 수 있는 구조를 갖췄는지를 함께 봐야 한다는 시사점을 얻을 수 있어요.",
+          "vocab": {
+            "w": "上方修正",
+            "r": "じょうほうしゅうせい",
+            "m": "기업이 기존에 발표했던 매출·이익 전망치를 실제 실적이 더 좋게 나오면서 위쪽으로 고쳐 올리는 것을 뜻하는 일본 증시·실적 용어예요. 오늘 소니가 영화·게임 흥행에 힘입어 연간 순이익 전망을 1조2100억엔에서 1조3300억엔으로 올려잡은 것처럼, 일본 매체들은 이런 실적 전망 상향 조정을 上方修正(조호슈세이)라고 표현해요."
+          }
+        }
+      ]
+    }
+  ],
+  "industry": {
+    "name": "로보택시(자율주행 택시)",
+    "valueChain": "센서·라이다·차량용 반도체 등 자율주행 하드웨어 조달 → 자율주행 SW·AI 모델 개발(인지·판단·제어) → 차량 생산·조립 → 로보택시 차량 운영·배차·보험·충전 관리(플릿 운영) → 승객의 호출·탑승(최종 수요)",
+    "bm": "로보택시는 차를 한 번 팔고 끝나는 게 아니라 호출 한 번마다 요금을 계속 받는 '모빌리티 서비스(MaaS)' 사업이라, 차량 한 대가 하루에 몇 번·몇 시간 승객을 태우는지(가동률)가 수익성을 좌우하는 구조다.",
+    "ksf": "① 사람 운전자 없이도 사고 없이 달릴 수 있다는 걸 누적 주행 데이터로 증명하는 자율주행 기술력, ② 도시마다 다르게 받아야 하는 자율주행 영업 허가를 하나씩 따내는 규제 대응력, ③ 수만 대의 차량을 한꺼번에 사서 굴리고 가동률을 관리할 수 있는 자금력",
+    "issue": "테슬라가 사이버트럭 생산을 2027년 중단하고 그 공장을 로보택시용 '사이버캡' 생산으로 돌리겠다고 밝혔는데, 사이버트럭이 3년간 목표치(연 25만 대)에 크게 못 미치는 수만 대만 팔린 끝에 로보택시 쪽에 승부를 걸게 된 상황에서, 이미 여러 도시에서 상업 운행 중인 구글 웨이모를 테슬라가 뒤늦게 따라잡아야 하는 점이 핵심 이슈다."
+  },
+  "bcg": [
+    {
+      "titleKo": "리서치 주도형 소비자 여정 — 마케팅 영향력의 규칙이 바뀌고 있다",
+      "title": "The Research-Led Consumer Journey Is Changing the Rules of Marketing Influence",
+      "url": "https://www.bcg.com/publications/2026/research-led-consumer-journey-marketing",
+      "summary": "BCG가 2026년 발표한 이 보고서는 전 세계 소비자의 40% 이상이 구매 전 스스로 적극적으로 정보를 찾아보는 '리서치 주도형' 구매 여정을 거치고 있으며, Z세대와 밀레니얼 세대에서는 그 비중이 50%를 넘는다고 분석했어요. 보고서는 BCG의 소비자 레이더 데이터를 인용해 소비자들이 거대언어모델(LLM)을 활용해 제품을 검색하는 비중이 최근 몇 년 사이 두 배 넘게 늘었고, 소비자의 60%가 AI가 생성한 검색 결과를 신뢰한다고 답했다고 전했어요. 보고서는 이제 브랜드가 성공하려면 발견 가능성(discoverability), 매력(desirability), 신뢰(trust)라는 세 가지 조건을 충족해야 하는데, 신뢰의 대상이 브랜드 자체뿐 아니라 소비자와 브랜드 사이에 낀 AI 시스템까지 포함한다고 강조했어요.",
+      "soWhat": "오늘 테크·일본 뉴스에서 다룬 테슬라의 로보택시 전환과 소니의 콘텐츠 IP 흥행은 모두 결국 소비자가 그 브랜드를 발견하고 신뢰하게 만드는 문제인데, 이 보고서는 그 발견과 신뢰의 창구가 이제 소비자 개인의 판단에서 AI 검색 시스템으로 옮겨가고 있다는 걸 보여줘요. 컨설팅 관점에서는 브랜드 전략을 짤 때 소비자를 직접 설득하는 것만큼이나, 그 소비자에게 추천을 건네는 AI 시스템에 어떻게 추천받을 만한 브랜드로 인식되는지를 별도의 전략 과제로 다뤄야 한다는 시사점을 얻을 수 있어요."
+    }
+  ],
+  "story": "오늘 이야기는 미국 중간선거 뒷이야기부터 풀어볼게. 지난 11월 3~4일 중간선거에서 민주당이 상·하원을 다 가져갔는데, 11월 6일 기준으로 보니까 민주당이 상원에서만 벌써 54석을 확보했고 미시시피·알래스카 같은 몇 곳은 아직 개표 중이래. 그 와중에 트럼프 대통령은 자기 SNS에 이란 문제에 대해서 '내가 맞았다'는 글을 올렸는데, 재밌는 건 정작 '그래서 이란을 다시 공습할 거냐'는 결정은 못 내리고 있다는 거야. CNBC가 투표자들한테 물어봤더니 74%가 '이란 문제가 이번 국회의원 투표에서 중요했다'고 답했을 정도로 이 전쟁이 선거에 큰 영향을 줬는데, 지금 트럼프 안에서는 네타냐후 이스라엘 총리가 '당장 다시 때리자'고 밀어붙이고 밴스 부통령 쪽은 '협상으로 끝내자'고 말리는 중이래. 게다가 공습에 필요한 항공모함(시어도어 루스벨트함) 전단이 11월 중순에나 중동 쪽에 도착한다니, 트럼프가 당장 결심해도 실제로 때릴 힘이 아직 준비가 안 된 상태인 거지.\\n\\n이 선거 뒷이야기가 경제 쪽으로 넘어가면 더 흥미진진해져. 월가에는 '공포지수'라고 부르는 VIX라는 지표가 있는데, 이게 하루 사이에 70%나 뛰어올라서 28까지 치솟았대. 보통 이 지수가 30을 넘으면 '시장이 완전히 겁에 질렸다'고 보는데, 거의 그 수준까지 간 거야. 전날(11월 5일) 나스닥이 또 4%가량 떨어지면서 반도체·데이터센터 관련 주식들을 끌어내렸는데, 그 바로 전날엔 투자자들이 '민주당 이겨도 별일 없겠지' 하면서 증시가 올랐었거든. 그러니까 하루는 괜찮다고 올랐다가, 다음 날은 다시 겁먹고 떨어진 거야. 블룸버그는 이날 기술주들이 2020년 이후 가장 많이 떨어졌다고 보도했는데, 이건 결국 '데이터센터 짓는 데 이렇게 돈을 쏟아붓는 게 정말 돈이 되는 거냐'는 의심이 시장에 퍼지기 시작했다는 뜻이야. 실제로 호주에서는 데이터센터 회사들이 올해 벌써 350억 달러(역대 최대)를 끌어모았는데, 호주 중앙은행 총재까지 나서서 'AI 투자 거품 위험을 전 세계 중앙은행들이 지켜보고 있다'고 말했대.\\n\\n이 충격이 한국 증시로 넘어온 흐름을 자세히 보면 꽤 드라마틱해. 11월 6일 아침, 삼성전자랑 SK하이닉스 주가가 한때 13~15%까지 급락했었어(전날 미국 반도체주 폭락의 직격탄을 맞은 거지). 그런데 시간이 지나면서 '이 정도면 너무 싸졌다'고 생각한 사람들이 사들이기 시작하면서 낙폭이 5%대까지 줄어들었고, 코스피 지수도 한때 무너졌던 5000선을 장중에 다시 회복했어. 그렇게 오전엔 분위기가 좀 살아났는데, 결국 하루를 다 마치고 보니까 코스피는 전 거래일보다 6.02% 내린 5059.69, 코스닥은 5.03% 내린 644.27로 장을 마감했어. 이날 외국인은 코스피에서만 2조7690억원어치를 팔았고, 기관이 1조7000억원을 사들이면서 그나마 더 크게 안 떨어지게 받쳐준 셈이야. 재밌는 건 반도체주뿐 아니라 2차전지 관련주인 에코프로(-5.49%), 에코프로비엠(-7.80%)도 같이 떨어졌다는 거야. 반도체 때문에 시작된 매도세가 완전히 다른 산업(2차전지)까지 끌고 내려간 거지.\\n\\n이 와중에 테크 쪽에서는 테슬라가 꽤 큰 결정을 내렸어. 일론 머스크가 자기 SNS에 '2027년 중반쯘 텍사스 기가팩토리에서 사이버트럭 생산을 그만두겠다'고 밝혔는데, 그 자리를 로보택시(무인 자율주행 택시) 전용 모델인 '사이버캡' 생산으로 채우겠다는 거야. 2019년에 사이버트럭을 처음 공개했을 때 머스크는 연간 25만 대씩 팔겠다고 했었는데, 실제로는 3년 동안 다 합쳐도 그 목표에 한참 못 미치는 수만 대밖에 못 팔았대. 그러니까 이번 결정은 사실상 '사이버트럭이라는 제품은 기대만큼 안 팔렸다'는 걸 테슬라가 인정하고, 그 생산 라인을 다음 베팅인 로보택시로 통째로 옮기는 거야. 다만 구글 자회사인 웨이모는 벌써 여러 도시에서 로보택시를 상업적으로 운행하고 있는데, 테슬라는 아직 시험 운행 단계라서 꽤 뒤처져 있다는 평가도 같이 나와.\\n\\n일본 쪽에서는 분위기가 완전히 달랐어. 소니그룹이 11월 5일에 연간 순이익 전망을 1조2100억엔에서 1조3300억엔으로 올려잡겠다고 발표했는데, 2분기 영업이익이 6223억엔으로 애널리스트들이 예상했던 5050억엔을 훌쩍 뛰어넘었대. 가장 큰 이유는 영화 '스파이더맨: 브랜드 뉴 데이'가 전 세계에서 25억 달러나 벌어들이면서 영화 부문 매출을 48%나 끌어올린 거고, 게임 부문도 '마블의 울버린'이 240만 장 팔리면서 매출이 9% 늘었어. 물론 플레이스테이션5 본체 판매량은 1년 전 400만 대에서 260만 대로 줄었고, AI 붐 때문에 메모리 반도체 값이 올라서 비용 부담도 커졌지만, 영화랑 게임이 그 구멍을 거의 다 메워준 거야. 11월 19일엔 'GTA6'까지 나오니까 게임 쪽은 더 좋아질 거라는 기대도 있대.\\n\\n오늘 하루를 정리하면, 미국에서는 중간선거 후폭풍이 '이란을 다시 때릴 것인가'라는 외교·안보 결정과 'AI 투자가 거품인가'라는 경제적 의심, 두 갈래로 계속 번지고 있어. 그 충격은 하룻밤 사이에 한국 증시로 넘어와서 코스피가 장중엔 반등했다가도 결국 6% 넘게 떨어진 채 마감했고, 반도체와 상관없어 보이던 2차전지주까지 같이 끌어내렸어. 그런 가운데서도 개별 기업들은 각자 다음 수를 두고 있었는데, 테슬라는 안 팔린 사이버트럭을 접고 로보택시에 전부를 걸었고, 소니는 영화랑 게임이라는 콘텐츠의 힘으로 반도체값 부담까지 이겨내고 실적 전망을 올렸어. 결국 오늘 하루는 '거시적인 불확실성(전쟁·AI 거품 논란)'과 '개별 기업의 구조적 베팅(로보택시·콘텐츠 IP)'이 동시에 진행된 날이었다고 보면 될 것 같아."
+};
+
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s => (s==null?"":String(s));
+const nowKST = new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'});
+if(BRIEFING.indices && BRIEFING.indices.length){ $("#indices").innerHTML = BRIEFING.indices.map(x=>{ const n=parseFloat(String(x.changePct).replace(/[^0-9.\-]/g,"")); const dir = n>0?"up":(n<0?"down":"flat"); const arrow = dir==="up"?"▲":(dir==="down"?"▼":"—"); return `<div class="idxcard"><div class="iname2">${esc(x.name)}</div><div class="ival">${esc(x.value)}</div><div class="ichg ${dir}">${arrow} ${esc(x.changePct)}%</div><div class="inote">${esc(x.note||"")}</div></div>`; }).join(""); } else { $("#indices").style.display="none"; }
+$("#meta").innerHTML = `<b><a href="archive.html" style="text-decoration:underline;text-decoration-color:var(--accent-soft)" title="지난 브리핑 모아보기">${esc(BRIEFING.dateLabel)}</a></b><span>·</span><span>${esc(BRIEFING.city||'Seoul')} · ${nowKST} KST 열람</span>`;
+$("#mood").textContent = BRIEFING.mood || "";
+$("#heads").innerHTML = BRIEFING.headliners.map(h=>`<li>${esc(h)}</li>`).join("");
+const cu = BRIEFING.catchup;
+if(cu){ $("#catchup").innerHTML = `<span class="ck">🕰️ 오늘의 따라잡기 — 처음부터 이해하기</span><h3>${esc(cu.topic)}</h3><p class="intro">${esc(cu.intro)}</p><ul class="tl">${(cu.timeline||[]).map(t=>`<li><span class="d">${esc(t.d)}</span>${esc(t.e)}</li>`).join("")}</ul><div class="why">${cu.why||""}</div>`; } else { $("#catchup").style.display="none"; }
+if(BRIEFING.story){ const storyParas = BRIEFING.story.split(/\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join(""); $("#story").innerHTML = `<span class="sk">📖 오늘의 이야기</span>${storyParas}`; } else { $("#story").style.display="none"; }
+const navItems = [...BRIEFING.sections.map(s=>({id:s.id,no:s.no,title:s.title})), ...(BRIEFING.industry ? [{id:"industry",no:"🏭",title:"산업"}] : []), ...(BRIEFING.bcg && BRIEFING.bcg.length ? [{id:"bcg",no:"📘",title:"BCG"}] : []), ...(BRIEFING.hkmarket ? [{id:"hkmarket",no:"📺",title:"한경마켓"}] : [])];
+$("#nav").innerHTML = navItems.map(n=> `<a href="#${n.id}" data-id="${n.id}"><span class="n">${esc(n.no)}</span>${esc(n.title)}</a>`).join("");
+function srcHtml(s){ if(!s) return ""; const link = s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">원문(${esc(s.date)})↗</a>` : (s.date?` · ${esc(s.date)}`:""); return `<span class="item__src">${esc(s.name)}${link}</span>`; }
+function fieldRow(lab,val,cls){return val?`<div class="field ${cls||""}"><span class="lab">${lab}</span><span class="val">${val}</span></div>`:""}
+function termsRow(terms){ if(!terms||!terms.length) return ""; return `<div class="terms"><div class="th">📖 용어 풀이</div>${terms.map(t=>`<div class="t"><b>${esc(t.t)}</b> — ${esc(t.d)}</div>`).join("")}</div>`; }
+function vocabRow(v){ if(!v) return ""; return `<div class="jword"><span class="jw-badge">🇯🇵 오늘의 비즈니스 일본어</span><span class="jw-text"><b>${esc(v.w)}</b> <span class="jw-r">(${esc(v.r)})</span> — ${esc(v.m)}</span></div>`; }
+function itemCard(it){ return `<article class="item open"><button class="item__head" aria-expanded="true" type="button"><span class="tag">${esc(it.tag)}</span><span><span class="item__title">${esc(it.title)}</span><br>${srcHtml(it.source)}</span><span class="chev">▾</span></button><div class="item__wrap"><div class="item__body"><div class="item__inner">${fieldRow("무슨 일",it.f1)}${fieldRow("그동안의 이야기",it.f2,"story")}${fieldRow("So What",it.f3)}${termsRow(it.terms)}${vocabRow(it.vocab)}</div></div></div></article>`; }
+let html = BRIEFING.sections.map(s=>`<section class="block" id="${s.id}"><div class="shead"><span class="no">${esc(s.no)}</span><h2>${esc(s.title)}</h2><span class="slug">${esc(s.slug)}</span></div>${s.items.map(itemCard).join("")}</section>`).join("");
+if(BRIEFING.industry){ const ind=BRIEFING.industry; const indRows=[["밸류체인",ind.valueChain],["비즈니스모델",ind.bm],["경쟁력 요소",ind.ksf],["최대 이슈",ind.issue]].map(([lab,val])=>fieldRow(lab,esc(val))).join(""); html += `<section class="block" id="industry"><div class="shead"><span class="no">🏭</span><h2>오늘의 산업 소개</h2><span class="slug">Industry</span></div><div class="industrycard"><span class="ik">🏭 오늘의 산업 소개</span><div class="iname">${esc(ind.name||"")}</div><div class="ifields">${indRows}</div></div></section>`; }
+if(BRIEFING.bcg && BRIEFING.bcg.length){ const bcgItems=BRIEFING.bcg.map(b=>`<div class="bcgitem"><div class="btitle">${esc(b.titleKo)}</div><div class="borig">${esc(b.title)}</div><p class="bsum">${esc(b.summary)}</p><div class="bsw"><b>So What</b> — ${esc(b.soWhat)}</div><a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">원문 보기 ↗</a></div>`).join(""); html += `<section class="block" id="bcg"><div class="shead"><span class="no">📘</span><h2>BCG 인사이트</h2><span class="slug">BCG Publications</span></div>${bcgItems}</section>`; }
+if(BRIEFING.hkmarket){ const hk=BRIEFING.hkmarket; const hkTopics=(hk.topics||[]).map(t=>`<div class="hktopic"><div class="httl">${esc(t.topic)}</div><div class="hdet">${esc(t.detail)}</div></div>`).join(""); html += `<section class="block" id="hkmarket"><div class="shead"><span class="no">📺</span><h2>한경코리아마켓</h2><span class="slug">YouTube Morning Brief</span></div><div class="hkmeta">${esc(hk.broadcastLabel||"")} · <a href="${esc(hk.videoUrl||"")}" target="_blank" rel="noopener">${esc(hk.videoTitle||"원본 방송 보기")} ↗</a></div>${hkTopics}</section>`; }
+$("#main").innerHTML = html;
+$("#main").insertAdjacentHTML("beforeend",`<footer>소스 정책: BBC · ABC · 조선비즈(산업) · TechCrunch · ZDNet · Gizmodo · 일본 주요 경제매체 · BCG · 한경코리아마켓(유튜브) — 작성 시점 검색·교차 확인 기준.<br>전황·시세는 빠르게 변하므로 중요한 판단 전 원문 확인 권장.<br>💡 매일 아침 9:30 KST에 이 페이지가 자동으로 새 브리핑으로 갱신됩니다. · 📚 <a href="archive.html">지난 브리핑 모아보기</a></footer>`);
+document.querySelectorAll(".item__head").forEach(h=>{ h.addEventListener("click",()=>{ const it=h.closest(".item"); const open=it.classList.toggle("open"); h.setAttribute("aria-expanded",open?"true":"false"); }); });
+const allBtn=$("#toggleAll"), allLab=$("#toggleAllLabel");
+allBtn.addEventListener("click",()=>{ const items=[...document.querySelectorAll(".item")]; const anyClosed=items.some(i=>!i.classList.contains("open")); items.forEach(i=>{i.classList.toggle("open",anyClosed); i.querySelector(".item__head").setAttribute("aria-expanded",anyClosed?"true":"false");}); allLab.textContent=anyClosed?"접기":"펼치기"; });
+const root=document.documentElement;
+$("#theme").addEventListener("click",()=>{root.setAttribute("data-theme", root.getAttribute("data-theme")==="dark"?"light":"dark");});
+$("#print").addEventListener("click",()=>window.print());
+const links=[...document.querySelectorAll(".navlinks a")];
+const spy=new IntersectionObserver(ents=>{ ents.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle("active",l.dataset.id===e.target.id));}}); },{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll("section.block").forEach(s=>spy.observe(s));
+</script>
+</body>
+</html>
