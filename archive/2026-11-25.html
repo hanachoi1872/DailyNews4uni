@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<!--
+  Daily Compass — BRIEFING 데이터 사용법
+  이 파일을 수정할 때는 스타일 정의와 렌더링 스크립트 로직은 건드리지 말고,
+  본문에 있는 실제 BRIEFING 데이터 객체의 값만 매일 새로 채워 넣으세요.
+
+  필수 필드: dateLabel, city, mood, headliners[3], catchup, sections[5], story, industry, bcg
+  탭은 정확히 7개: 세계 / 글로벌 경제·시장 / 한국 경제·시장 / 테크·AI / 일본 경제·시장 / 산업 소개 / BCG 인사이트
+  (생각거리·일정 섹션은 폐지됨 — think/calendar 필드는 더 이상 사용하지 않습니다)
+
+  ▸ indices (선택, array) — 페이지 맨 위 주가지수 바. 없으면 자동으로 숨겨집니다.
+    [{ name: "코스피", value: "3,412.5", changePct: "+1.8", note: "최근 1개월 평균 대비 높은 수준" }, ...]
+
+  ▸ story (필수, string) — "오늘의 이야기". 오늘 다룬 모든 기사를 스토리텔링 형식으로 훑어주는 글.
+    헤드라인 바로 아래에 표시됩니다. 문단을 나누려면 줄바꿈(\n)을 사용하세요.
+
+  ▸ sections[5] — 각 section의 items 배열 안 f1(무슨 일)/f2(그동안의 이야기)/f3(So What)는
+    각각 최소 3~4문장 분량으로 작성합니다 (짧은 한두 줄 요약 금지).
+
+  ▸ industry (필수, object) — "오늘의 산업 소개".
+    { name: "산업 이름", valueChain: "밸류체인 한 줄(MECE)", bm: "비즈니스모델 1~2줄", ksf: "경쟁력 요소 1~2줄", issue: "최대 이슈(주요 플레이어 포함) 1~2줄" }
+
+  ▸ bcg (필수, array, 1개) — "BCG 인사이트".
+    [{ titleKo: "한글 제목", title: "원제", url: "https://www.bcg.com/...", summary: "3~4문장 요약", soWhat: "한 문장 시사점" }]
+
+  ▸ hkmarket (선택, object) — "한경코리아마켓". 유튜브 아침 방송 자막을 주제별로 정리한 8번째 탭.
+    없으면 자동으로 숨겨집니다 (예: 자막 추출 실패, 또는 이 필드를 채우지 않는 발행 경로).
+    { videoTitle: "영상 제목", videoUrl: "https://www.youtube.com/watch?v=...", broadcastLabel: "2026.08.14 (금) 8:00 방송",
+      topics: [{ topic: "주제 제목", detail: "2~4문장 요약" }, ...] }
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Compass — 2026.11.25</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#EBF3FA;--card:#FFFFFF;--ink:#211D2B;--ink-soft:#645C74;--line:#DAD5E2;--accent:#1E7FBF;--accent-ink:#0B4A73;--accent-soft:rgba(30,127,191,.12);--warm:#2E6F95;--warm-soft:rgba(46,111,149,.12);--up:#C4453C;--down:#2B62C9;--flat:#7B7787;--display:'Noto Sans KR','Malgun Gothic',sans-serif;--body:'Noto Sans KR','Malgun Gothic',system-ui,-apple-system,sans-serif;--mono:'Noto Sans KR','Malgun Gothic',sans-serif;--maxw:860px;}
+  [data-theme="dark"]{--paper:#131019;--card:#1C1826;--ink:#EDE9F4;--ink-soft:#A79FBA;--line:#322B42;--accent:#7DD3FC;--accent-ink:#7DD3FC;--accent-soft:rgba(125,211,252,.14);--warm:#E39358;--warm-soft:rgba(227,147,88,.13);--up:#F0736A;--down:#6E9BEF;--flat:#8D889B;}
+  *{box-sizing:border-box} html{scroll-behavior:smooth} @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.66;-webkit-font-smoothing:antialiased} a{color:inherit} .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .masthead{padding:36px 0 20px;border-bottom:2.5px solid var(--ink)} .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;display:flex;gap:10px;align-items:center} .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2.6s ease-in-out infinite} @media (prefers-reduced-motion:reduce){.eyebrow .dot{animation:none}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .title{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,56px);line-height:1.05;letter-spacing:-.01em;margin:12px 0 0} .title .amp{color:var(--accent-ink)}
+  .meta{margin-top:12px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center} .meta b{color:var(--ink);font-weight:600}
+  .mood{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 13px;border:1.5px solid var(--accent);border-radius:999px;background:var(--accent-soft);font-size:13px;font-weight:700}
+  .lead{margin:20px 0 6px;padding:17px 20px 18px;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 10px 10px 0} .lead .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  .heads{margin:10px 0 0;padding:0;list-style:none;counter-reset:h;display:grid;gap:9px} .heads li{position:relative;padding-left:32px;font-family:var(--display);font-weight:700;font-size:15.5px;line-height:1.45} .heads li::before{counter-increment:h;content:counter(h);position:absolute;left:0;top:2px;font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent-ink);border:1px solid var(--accent-ink);border-radius:5px;width:20px;height:20px;display:grid;place-items:center}
+  .catchup{margin:18px 0 0;background:var(--card);border:1.5px solid var(--warm);border-radius:14px;padding:18px 20px} .catchup .ck{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--warm);font-weight:700} .catchup h3{margin:7px 0 4px;font-family:var(--display);font-size:19px;font-weight:800} .catchup .intro{margin:0 0 12px;font-size:13.5px;color:var(--ink-soft)}
+  .tl{margin:0;padding:0;list-style:none;border-left:2px solid var(--warm);margin-left:6px} .tl li{position:relative;padding:0 0 12px 18px;font-size:13.5px} .tl li::before{content:"";position:absolute;left:-6px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--paper);border:2.5px solid var(--warm)} .tl .d{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--warm);display:block}
+  .catchup .why{margin:12px 0 0;padding:11px 13px;background:var(--warm-soft);border-radius:9px;font-size:13.5px} .catchup .why b{color:var(--warm)}
+  nav.bar{position:sticky;top:0;z-index:30;margin-top:20px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper) 88%, transparent);backdrop-filter:blur(10px)} .bar__in{max-width:var(--maxw);margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:8px}
+  .navlinks{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1} .navlinks::-webkit-scrollbar{display:none} .navlinks a{flex:0 0 auto;text-decoration:none;font-size:13px;font-weight:600;color:var(--ink-soft);padding:6px 11px;border-radius:8px;white-space:nowrap} .navlinks a .n{font-family:var(--mono);color:var(--accent-ink);margin-right:5px;font-size:11.5px} .navlinks a:hover{background:var(--accent-soft);color:var(--ink)} .navlinks a.active{background:var(--ink);color:var(--paper)} .navlinks a.active .n{color:var(--paper)}
+  .tools{display:flex;gap:6px} .tools button{font-family:var(--body);font-size:12.5px;font-weight:600;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;cursor:pointer} .tools button:hover{color:var(--ink);border-color:var(--accent)} .tools button:focus-visible,.navlinks a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .block{padding:26px 0 4px} .shead{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px} .shead .no{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent-ink)} .shead h2{font-family:var(--display);font-weight:800;font-size:21px;margin:0} .shead .slug{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden} .item__head{width:100%;display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:none;border:0;cursor:pointer;text-align:left;font-family:var(--body);color:var(--ink)} .tag{flex:0 0 auto;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink);margin-top:2px} .item__title{font-weight:700;font-size:15px;line-height:1.45} .item__src{font-family:var(--mono);font-size:11px;color:var(--ink-soft)} .item__src a{color:var(--accent-ink)} .chev{margin-left:auto;flex:0 0 auto;color:var(--ink-soft);transition:transform .2s} .item.open .chev{transform:rotate(180deg)}
+  .item__wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .24s ease} .item.open .item__wrap{grid-template-rows:1fr} .item__body{overflow:hidden} .item__inner{padding:2px 15px 15px;display:grid;gap:9px}
+  .field{display:grid;grid-template-columns:92px 1fr;gap:10px;font-size:13.5px} .field .lab{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--accent-ink);padding-top:3px} .field.story .lab{color:var(--warm)} .field.story .val{background:var(--warm-soft);border-radius:8px;padding:9px 11px} .field .val b{color:var(--accent-ink)} @media (max-width:520px){.field{grid-template-columns:1fr}.field .lab{padding-top:0}}
+  .terms{margin-top:2px;padding:10px 12px;border:1px dashed var(--line);border-radius:9px;background:color-mix(in srgb,var(--paper) 55%, transparent)} .terms .th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:5px} .terms .t{font-size:12.8px;color:var(--ink-soft);line-height:1.6;margin:2px 0} .terms .t b{color:var(--ink);font-weight:700}
+  .jword{margin-top:2px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap} .jword .jw-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent-ink);white-space:nowrap} .jword .jw-text{font-size:13px;color:var(--ink);line-height:1.6} .jword .jw-text b{font-family:var(--display);font-size:15px} .jword .jw-r{color:var(--ink-soft);font-size:12px}
+  footer{margin:34px 0 46px;padding-top:14px;border-top:2.5px solid var(--ink);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.8} footer a{color:var(--accent-ink)} @media print{nav.bar{display:none} .item__wrap{grid-template-rows:1fr!important}}
+  .dailystory{margin:18px 0 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px} .dailystory .sk{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .dailystory p{margin:12px 0 0;font-size:15.5px;line-height:1.9;color:var(--ink)} .dailystory p:first-of-type{margin-top:10px}
+  .industrycard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px} .industrycard .ik{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .industrycard .iname{margin:8px 0 0;font-family:var(--display);font-size:19px;font-weight:800} .industrycard .ifields{margin-top:12px;display:grid;gap:9px}
+  .idxbar{max-width:var(--maxw);margin:0 auto;padding:12px 20px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none} .idxbar::-webkit-scrollbar{display:none}
+  .idxcard{flex:0 0 auto;min-width:128px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .idxcard .iname2{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);font-weight:600}
+  .idxcard .ival{font-family:var(--display);font-weight:800;font-size:16px;margin-top:2px}
+  .idxcard .ichg{font-family:var(--mono);font-size:12px;font-weight:700;margin-top:2px}
+  .idxcard .ichg.up{color:var(--up)} .idxcard .ichg.down{color:var(--down)} .idxcard .ichg.flat{color:var(--flat)}
+  .idxcard .inote{font-size:11px;color:var(--ink-soft);margin-top:4px;line-height:1.4;max-width:160px}
+  .bcgitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:10px} .bcgitem .btitle{font-family:var(--display);font-weight:700;font-size:15.5px} .bcgitem .borig{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-style:italic} .bcgitem .bsum{margin:9px 0 0;font-size:13.5px;line-height:1.7;color:var(--ink)} .bcgitem .bsw{margin-top:9px;padding:9px 11px;background:var(--accent-soft);border-radius:8px;font-size:12.8px} .bcgitem .bsw b{color:var(--accent-ink)} .bcgitem .blink{margin-top:9px;display:inline-block;font-family:var(--mono);font-size:11.5px;color:var(--accent-ink);text-decoration:none}
+  .hkmeta{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;font-size:13px;color:var(--ink-soft)} .hkmeta a{color:var(--accent-ink);font-weight:600}
+  .hktopic{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px} .hktopic .httl{font-family:var(--display);font-weight:700;font-size:14.5px} .hktopic .hdet{margin-top:6px;font-size:13.3px;line-height:1.7;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="idxbar" id="indices"></div>
+<div class="wrap"><header class="masthead"><div class="eyebrow"><span class="dot"></span>WORLD · ECONOMY · TECH — 매일 아침 5분</div><h1 class="title">Daily <span class="amp">Compass</span></h1><div class="meta" id="meta"></div><div class="mood" id="mood"></div><div class="lead"><span class="k">오늘의 3분 — 이것만 읽어도 OK</span><ol class="heads" id="heads"></ol></div><div class="dailystory" id="story"></div><div class="catchup" id="catchup"></div></header></div>
+<nav class="bar"><div class="bar__in"><div class="navlinks" id="nav"></div><div class="tools"><button id="toggleAll" type="button">전체 <span id="toggleAllLabel">접기</span></button><button id="theme" type="button" aria-label="테마 전환">◐</button><button id="print" type="button" aria-label="인쇄">⏏</button></div></div></nav>
+<main class="wrap" id="main"></main>
+<script>
+const BRIEFING = {
+  "indices": [
+    {
+      "name": "코스피",
+      "value": "5,006.03",
+      "changePct": "+6.32",
+      "note": "11/24(화) 종가 기준 — 엔비디아 랠리 열기로 매수 사이드카 발동 후 급등 마감, 최근 1개월 평균보다 크게 높은 수준"
+    },
+    {
+      "name": "코스닥",
+      "value": "665.88",
+      "changePct": "+4.79",
+      "note": "11/24(화) 종가 기준 — 반도체 중심 강세 지속, 이틀째 급등"
+    },
+    {
+      "name": "나스닥",
+      "value": "23,733.54",
+      "changePct": "-1.48",
+      "note": "11/24(화, 현지시간) 종가 — 전날 엔비디아 주도 폭등분 일부 되돌림, 반도체지수는 7.9% 급락"
+    },
+    {
+      "name": "다우존스",
+      "value": "50,018.70",
+      "changePct": "+0.85",
+      "note": "11/24(화, 현지시간) 종가 — 헬스케어·가치주 주도로 5만선 위에서 마감, 소비자신뢰지수가 예상치를 크게 상회"
+    },
+    {
+      "name": "닛케이225",
+      "value": "58,644.02",
+      "changePct": "+3.91",
+      "note": "11/24(화) 종가 기준 — 엔비디아 랠리 영향으로 급등, 최근 1개월 평균 대비 높은 수준"
+    }
+  ],
+  "dateLabel": "2026년 11월 25일 (수)",
+  "city": "Seoul",
+  "mood": "오늘은 '끝나지 않는 협상과 끝나지 않는 확산'이 눈에 띄는 날이에요. 17년 만에 처음으로 합의 없이 끝난 기후총회, 전선 밖으로 번지는 우크라이나 전쟁, 상장 나흘 만에 공모가 밑으로 무너진 AI 기업 주가까지, 큰 기대 속에 시작된 일들이 생각만큼 쉽게 마무리되지 않는다는 공통점이 보여요.",
+  "headliners": [
+    "튀르키예 안탈리아에서 열린 COP31 기후총회가 화석연료·기후재원 합의에 실패한 채 22일(일) 폐막했어요. 2009년 코펜하겐 총회(COP15) 이후 17년 만에 처음으로 합의문 없이 끝난 유엔 기후총회예요.",
+    "올여름 흑해에서 시작된 드론 공격이 폴란드 영공 침범과 리비아 벵가지 항구의 러시아 전함 격침으로까지 번지며, 우크라이나 전쟁이 전선 밖으로 확산되는 양상을 보이고 있어요. EU는 22번째 대러 제재안을 준비하고 있어요.",
+    "주당 83달러에 상장했던 AI 기업 앤트로픽의 주가가 단 4거래일 만에 공모가 밑으로 떨어졌어요. 지난해 상장한 스페이스X가 공모가를 지킨 21거래일보다 훨씬 짧은 기간이에요."
+  ],
+  "catchup": {
+    "topic": "우크라이나 전쟁의 국경 밖 확산 — 흑해 드론전부터 폴란드 영공, 리비아 벵가지까지",
+    "intro": "올여름 흑해에서 시작된 드론 공격이 가을 들어 폴란드 영공 침범과 리비아 벵가지 항구의 전함 격침으로까지 번지며, 우크라이나 전쟁이 전선을 벗어나 유럽과 지중해 곳곳으로 확산되는 양상을 보이고 있어요. 지난주에는 급기야 나토 회원국 폴란드가 사흘 간격으로 두 차례나 영공을 침범당했고, EU는 22번째 대러 제재안을 준비하고 나섰어요. 7월 중순부터 지금까지 쌓인 흐름을 정리해볼게요.",
+    "timeline": [
+      {
+        "d": "2026.07 중순~",
+        "e": "불가리아·루마니아 인근 흑해 해역에서 선박을 겨냥한 드론 공격이 시작돼, 11월까지 최소 17척의 선박이 피해를 입었어요."
+      },
+      {
+        "d": "2026.11.14 (토)",
+        "e": "루마니아 인근 해역에서 상선 3척이 동시에 드론 피격을 당해 루마니아가 나토에 지원을 요청했어요."
+      },
+      {
+        "d": "2026.11.16~17",
+        "e": "불가리아 인근에서 소말리아 선적 화물선과 라이베리아 선적 LPG운반선이 잇따라 침몰했어요."
+      },
+      {
+        "d": "2026.11.20 (금)",
+        "e": "러시아가 우크라이나를 향해 대규모 공습을 벌이는 과정에서 러시아제 순항미사일 추정 발사체와 드론이 나토 회원국 폴란드 영내(우크라이나 접경에서 약 50km 지점)에 떨어졌어요. 당시 영국·프랑스가 주도하는 11개국 합동군사훈련이 같은 지역에서 진행 중이었고, 폴란드 총리 투스크는 이게 우연이 아닐 수 있다고 말했어요."
+      },
+      {
+        "d": "2026.11.22 (일)",
+        "e": "러시아 드론이 재차 폴란드 영공에 짧게 진입했고, 나토 지휘하에 있던 스웨덴 그리펜 전투기 조종사가 교전을 승인받았지만 기상 여건 때문에 실제 교전은 이뤄지지 않았어요. 같은 날 우크라이나는 리비아 벵가지 항구에 정박해 있던 러시아 전함을 격침했고, 젤렌스키 대통령은 이튿날 이를 '모범적인 우크라이나 작전'이라 부르며 영상을 공개했어요."
+      },
+      {
+        "d": "2026.11.23 (월)",
+        "e": "나토 32개 회원국 대사들이 폴란드의 요청으로 브뤼셀에서 긴급회의를 열어 이번 영공 침범을 '중대한 위반'으로 규정했고, 조기경보기(AWACS)를 폴란드에 추가 배치하기로 했어요. 폴란드는 미군의 영구 주둔을 다시 요청했어요."
+      },
+      {
+        "d": "2026.11.24 (화) [현재진행중]",
+        "e": "EU 행정부는 폰데어라이엔 집행위원장 주도로 러시아에 대한 22번째 제재 패키지를 준비하고 있다고 밝혔고, 폰데어라이엔은 러시아가 '진정성 있는 평화 의지'를 보일 때까지 제재를 계속 추가하겠다고 말했어요."
+      }
+    ],
+    "why": "<b>컨설턴트 관점</b> 이 사례가 보여주는 패턴은, 흑해의 선박 드론 공격부터 폴란드의 영공 침범, 리비아의 전함 격침까지 각각은 별개의 사건처럼 보이지만 하나의 공통점을 갖고 있다는 거예요. 바로 '누구의 소행인지 명확히 규명되지 않거나, 규명돼도 전면전으로 확대되지는 않는 선'에서 멈춘다는 점이에요. 7월부터 11월까지 넉 달 넘게 17척 넘는 선박과 두 차례의 영공 침범이 쌓였는데도 나토가 집단방위 조항(5조)을 발동하지 않고 조기경보기 추가 배치 같은 제한적 대응에 머물렀다는 사실은, 이런 '회색지대' 공격이 상대의 대응 수위를 시험하면서도 전면적 반격은 피해가는 전략으로 쓰이고 있다는 걸 보여줘요. 컨설팅 관점에서는 지정학적 리스크가 점진적으로 쌓이는 상황을 진단할 때 '전쟁이냐 평화냐'라는 이분법 대신, 각 사건의 빈도·근접성·대응 수준이 시간이 지나며 어떻게 조금씩 상향되는지를 추적해야, 위기가 실제로 어느 단계까지 와 있는지를 더 정확히 가늠할 수 있어요."
+  },
+  "sections": [
+    {
+      "id": "world",
+      "no": "01",
+      "title": "세계",
+      "slug": "World",
+      "items": [
+        {
+          "tag": "COP31기후협상결렬17년만첫협상실패화석연료재원갈등",
+          "title": "COP31, 17년 만에 '빈손' 폐막…화석연료·기후재원 합의 결국 불발",
+          "source": {
+            "name": "ABC News",
+            "url": "https://abcnews.go.com/International",
+            "date": "2026.11.23"
+          },
+          "f1": "ABC뉴스는 튀르키예 안탈리아에서 11월9일부터 열린 제31차 유엔기후변화협약 당사국총회(COP31)가 22일(일) 최종 합의안 도출에 실패한 채 폐회했다고 보도했어요. 매체는 당초 11월20일 폐막 예정이었던 이번 총회가 이틀 넘게 연장되며 역대 가장 길게 열린 유엔 기후총회가 됐다고 전했어요. 매체는 이렇게 협상이 완전히 결렬된 것은 2009년 코펜하겐 총회(COP15) 이후 17년 만에 처음이라고 전했어요. 매체는 튀르키예 COP31 의장 무라트 쿠룸이 폐막 세션에서 대표단에게 더 이상 제시할 합의문이 없다고 말했다고 전했어요.",
+          "f2": "매체는 협상 결렬의 핵심 쟁점이 화석연료 사용 축소를 문서에 명시할지 여부였다고 전했어요. 매체는 EU를 비롯한 다수 국가가 화석연료 관련 문구가 빠진 초안을 거부했고, 사우디아라비아 등 산유국들은 화석연료 관련 문구 자체를 반대했다고 전했어요. 매체는 선진국과 개발도상국 사이에 조 단위 규모의 기후재원 지원을 둘러싼 입장차도 좁혀지지 않았다고 전했어요. 매체는 유엔 사무총장 안토니우 구테흐스가 이번 결과를 '매우 실망스럽다'고 평가했고, 호주 측 협상 의장인 크리스 보언도 '매우 유감스럽다'고 말했다고 전했어요. 매체는 지열에너지 공급 확대, 친환경 물류회랑 구축, 2035년까지 전력믹스 내 전기 비중 35%로 확대 등 일부 소규모 부속 합의만 채택됐다고 덧붙였어요.",
+          "f3": "이 사례가 보여주는 건, 198개 당사국이 모두 동의해야 하는 다자 기후협상 체제가 화석연료라는 단 하나의 쟁점 앞에서 17년 만에 처음으로 완전히 멈춰설 수 있다는 점이에요. 역대 가장 긴 협상 기간(이틀 연장)을 들였는데도 합의에 이르지 못했다는 사실은, 시간을 더 쓰는 것만으로는 근본적인 입장차를 좁힐 수 없다는 걸 보여줘요. 산유국과 선진국·도서국 사이의 대립이 매번 비슷한 지점에서 반복된다는 점은, 다자 협상의 구조 자체가 가장 민감한 쟁점을 계속 뒤로 미루도록 설계돼 있다는 뜻이기도 해요. 컨설팅 관점에서는 여러 당사자가 합의에 이르러야 하는 협상을 설계할 때 '모든 안건을 한 번에 묶어 처리하려는 시도'가 오히려 전체 합의를 좌초시킬 위험이 있다는 걸 주의해야 하고, 쟁점별로 분리해 단계적으로 합의를 쌓아가는 방식이 완전한 결렬보다 나은 결과를 낼 수 있다는 걸 염두에 둬야 해요."
+        }
+      ]
+    },
+    {
+      "id": "econ",
+      "no": "02",
+      "title": "글로벌 경제·시장",
+      "slug": "Economy",
+      "items": [
+        {
+          "tag": "앤트로픽IPO가격붕괴4거래일스페이스X21거래일나스닥연간수익률소멸",
+          "title": "앤트로픽, 상장 나흘 만에 공모가 밑으로…나스닥 연간 수익률도 반납",
+          "source": {
+            "name": "ABC News",
+            "url": "https://abcnews.go.com/business",
+            "date": "2026.11.24"
+          },
+          "f1": "ABC뉴스는 AI 기업 앤트로픽이 11월19일 주당 83달러에 나스닥에 상장해 1조3000억 달러가 넘는 기업가치로 거래를 시작했다고 전했어요. 매체는 상장 이튿날인 20일(금) 주가가 8.5% 넘게 떨어졌고, 이 충격으로 나스닥종합지수가 그해 들어 쌓아온 연간 수익률을 전부 반납했다고 전했어요. 매체는 투자자들이 AI 산업의 성장 지속 가능성에 대한 의구심을 키우고 있다고 전했어요. 블룸버그 등 다른 매체들은 이 하락세가 이어지며 11월24일(화)에는 주가가 공모가 83달러 아래인 81.91달러(-6.5%)로 마감했고, 장중에는 79.42달러까지 떨어졌다고 보도했어요.",
+          "f2": "매체들은 앤트로픽이 공모가 아래로 떨어지는 데 걸린 기간이 상장 후 단 4거래일에 불과하다고 전했어요. 이는 지난해 상장한 스페이스X가 공모가를 밑돈 데 걸린 21거래일보다 훨씬 짧은 기간이라고 비교했어요. CNBC는 하락 배경으로 AI 섹터 전반의 약세와 더불어, 액시오스가 보도한 '앤트로픽·오픈AI 직원들이 자사의 최신 모델이 공개하기엔 너무 강력하다고 우려한다'는 내용의 기사가 투자심리를 흔들었다고 전했어요. 매체들은 그럼에도 캐나코드 제뉴어티 등 일부 애널리스트들은 목표주가 135달러를 제시하며 여전히 긍정적인 전망을 유지하고 있다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 1조3000억 달러 규모의 '역대급' 상장이라는 화려한 시작이 불과 나흘 만에 공모가 붕괴로 이어질 수 있을 만큼 AI 기업의 밸류에이션에 대한 시장의 확신이 아직 얕다는 점이에요. 스페이스X는 21거래일이나 공모가를 지켰는데 앤트로픽은 4거래일 만에 무너졌다는 비교는, 같은 '테크 대장주 상장'이라도 사업모델의 수익 가시성에 따라 투자자들의 인내심이 전혀 다르게 작동한다는 걸 보여줘요. AI 모델이 너무 강력해서 공개하기 위험하다는 보도 하나가 주가를 흔들 수 있었다는 사실은, AI 기업의 주가가 매출·이익 같은 전통적 펀더멘털보다 '안전성 내러티브'에 더 민감하게 반응하는 단계에 있다는 뜻이기도 해요. 컨설팅 관점에서는 신규 상장 기업의 주가 방어력을 평가할 때 공모가 자체보다 '그 기업의 수익 모델을 투자자들이 얼마나 구체적으로 설명할 수 있는가'를 봐야, 상장 초기 변동성이 일시적 소음인지 근본적 경고 신호인지를 구분할 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "korea",
+      "no": "03",
+      "title": "한국 경제·시장",
+      "slug": "Korea",
+      "items": [
+        {
+          "tag": "롱제비티장수산업ER100후성유전학적재프로그래밍조선비즈HIF2026",
+          "title": "노화 세포 되돌리는 '롱제비티 산업' 뜬다…조선비즈, 12월 HIF 2026 개최",
+          "source": {
+            "name": "조선비즈",
+            "url": "https://m.news.nate.com/view/20261123n02112",
+            "date": "2026.11.23"
+          },
+          "f1": "조선비즈는 세포 노화를 되돌리고 근육량을 지켜 건강수명을 늘리는 '롱제비티(장수) 산업'이 새로운 투자 테마로 떠오르고 있다고 보도했어요. 매체는 이런 흐름에 맞춰 오는 12월4일(금) 서울 중구 소공동 웨스틴조선호텔 그랜드볼룸에서 '롱제비티가 여는 미래: 비만부터 항노화·알츠하이머 혁신까지'를 주제로 제14회 헬스케어이노베이션포럼(HIF 2026)을 개최한다고 전했어요. 매체는 이 포럼이 오전9시부터 오후4시까지 오찬을 포함해 진행되며, 등록은 조선비즈 이벤트 사이트를 통해 할 수 있다고 안내했어요.",
+          "f2": "매체는 기사에서 소개 사례로 'ER-100'이라는 물질을 들었는데, 이는 DNA 염기서열 자체를 바꾸지 않고 유전자가 켜지고 꺼지는 작동 방식만을 조절하는 '후성유전학적 재프로그래밍' 기술을 활용한다고 전했어요. 매체는 이 물질의 초기 임상에서 환자 3명에게 투여한 뒤 56일까지 중대한 안전성 문제가 보고되지 않았고, 이 중 2명에게서는 시야 검사 지표가 개선되는 신호까지 관찰됐다고 전했어요. 매체는 이런 항노화·근감소 억제 기술들이 비만치료제(GLP-1) 열풍 이후 제약·바이오 업계의 다음 성장축으로 주목받고 있다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 제약·바이오 산업의 투자 테마가 '질병을 치료하는 약'에서 '노화 자체를 늦추는 기술'로 조금씩 확장되고 있다는 점이에요. DNA 서열을 바꾸지 않고 유전자의 작동 스위치만 조절한다는 ER-100의 접근 방식은, 유전자 자체를 영구적으로 편집하는 기존 유전자치료제보다 안전성 측면에서 진입장벽이 낮을 수 있다는 걸 보여줘요. 다만 임상 참여 환자가 단 3명에 56일치 자료뿐이라는 점은, 이 기술이 실제 상용화까지는 훨씬 더 많은 데이터와 시간이 필요한 초기 단계에 머물러 있다는 뜻이기도 해요. 컨설팅 관점에서는 이렇게 아직 임상 초기인 바이오 기술을 평가할 때 '어떤 질병을 겨냥하는가'보다 '그 기술이 기존 치료 패러다임보다 안전성이나 접근성에서 구조적으로 유리한 지점을 갖고 있는가'를 먼저 봐야, 과도한 기대와 실제 상업화 가능성을 구분할 수 있어요."
+        },
+        {
+          "tag": "삼성전자임원131명승진HBM4D램로봇AI여성승진역대최대",
+          "title": "삼성전자, 임원 131명 승진…HBM4·D램 주역과 로봇·AI 인재 전진배치",
+          "source": {
+            "name": "조선비즈",
+            "url": "https://m.news.nate.com/view/20261124n08387",
+            "date": "2026.11.24"
+          },
+          "f1": "조선비즈는 삼성전자가 11월24일 부사장 39명, 상무 78명, 펠로 2명, 마스터 12명 등 총 131명 규모의 임원 승진 인사를 발표했다고 보도했어요. 매체는 이는 지난해 161명보다 30명(18.6%) 줄어든 규모라고 전했어요. 매체는 사업부별로는 반도체(DS) 부문에서 70명, 완제품(DX) 부문에서 61명이 승진했다고 전했어요. 매체는 이번 인사에서 신임 여성 승진자가 11명으로 역대 최대를 기록했다고 전했어요.",
+          "f2": "매체는 이번 승진에서 세계 최초 HBM4 양산 공급을 이끈 하경수 D램설계2그룹장과, HBM4 양산 수율 확보에 기여한 박태훈 D램YE팀장 등이 부사장으로 올라섰다고 전했어요. 매체는 고성능 D램 개발을 주도한 김명오 D램설계1그룹 부사장과 차세대 커스텀 HBM 개발을 이끈 박진표 부사장도 함께 승진했다고 전했어요. 매체는 로봇 분야에서는 형승용 로보틱스시스템그룹장과 구동한 피지컬AI랩장이 상무로 승진하며 신사업 인재가 전면에 배치됐다고 전했어요. 매체는 삼성전자가 조만간 조직개편과 보직인사를 확정해 추가로 발표할 예정이라고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 삼성전자가 승진 인사라는 매년 반복되는 이벤트를 통해 회사의 전략적 우선순위를 가장 직접적으로 드러낸다는 점이에요. 전체 승진 규모는 지난해보다 줄었는데도 HBM4·D램처럼 실적을 이끈 반도체 기술 인력과 로봇·AI 같은 신사업 인력은 오히려 전면에 배치됐다는 사실은, 승진 축소가 '성과에 대한 보상을 줄인 것'이 아니라 '핵심 기술과 미래 사업에 보상을 더 집중시킨 것'이라는 걸 보여줘요. 여성 승진자가 역대 최대를 기록했다는 점도 이번 인사가 단순한 연차·서열 기준이 아니라 성과와 전문성 중심으로 이뤄졌다는 신호로 읽을 수 있어요. 컨설팅 관점에서는 기업의 인사 발표를 분석할 때 '승진자 총 숫자'보다 '어떤 기술·사업 영역의 인재가 전체 승진자 중 얼마나 비중 있게 배치됐는가'를 봐야, 그 기업이 실제로 어디에 미래를 걸고 있는지를 더 정확히 읽어낼 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "tech",
+      "no": "04",
+      "title": "테크·AI",
+      "slug": "Tech & AI",
+      "items": [
+        {
+          "tag": "랭체인시리즈C3억달러3조원밸류에이션캐피털G AI에이전트인프라",
+          "title": "AI 에이전트 인프라 스타트업 랭체인, 3000억원 투자받아 몸값 3조원으로",
+          "source": {
+            "name": "TechCrunch",
+            "url": "https://techcrunch.com/2026/11/13/ai-agent-startup-langchain-hits-3b-valuation/",
+            "date": "2026.11.13"
+          },
+          "f1": "테크크런치는 AI 에이전트 개발 인프라 스타트업 랭체인이 캐피털G가 주도하는 3억 달러(약 3000억원) 규모의 시리즈C 투자를 유치해 기업가치 30억 달러(약 3조원)를 인정받았다고 보도했어요. 매체는 싱가포르 국부펀드 GIC와 DFJ그로스, IVP, 사파이어벤처스 등도 이번 라운드에 참여했다고 전했어요. 매체는 이번 기업가치가 1년 전 IVP가 주도한 시리즈B 당시의 12억5000만 달러보다 2.4배 넘게 뛴 수치라고 전했어요.",
+          "f2": "매체는 랭체인의 관찰·모니터링 플랫폼인 '랭스미스'의 고객사가 7000곳을 넘어섰다고 전했어요. 매체는 투자자인 캐피털G가 1년 전 시리즈B 투자 이후 이번이 두 번째 투자라며 랭체인에 대한 투자를 '더블 다운'했다고 설명했다고 전했어요. 매체는 랭체인이 기업들이 자체적으로 AI 에이전트를 만들고 운영할 수 있도록 돕는 개발 프레임워크·오케스트레이션 도구를 제공하는 회사라고 전했어요.",
+          "f3": "이 사례가 보여주는 건, AI 에이전트 열풍 속에서 에이전트를 직접 만드는 '파운데이션 모델' 기업들 못지않게, 그 에이전트를 안정적으로 운영·관찰하게 해주는 '인프라·미들웨어' 기업의 몸값도 가파르게 오르고 있다는 점이에요. 랭체인의 기업가치가 1년 만에 2.4배 뛰었다는 사실은, 기업들이 AI 에이전트를 실제 업무에 투입하면서 '에이전트가 제대로 작동하는지 확인하는 도구'에 대한 수요가 그만큼 빠르게 커지고 있다는 걸 보여줘요. 랭스미스 고객사가 7000곳을 넘었다는 숫자는 이 수요가 몇몇 대기업에 그치지 않고 광범위하게 퍼지고 있다는 뜻이기도 해요. 컨설팅 관점에서는 AI 밸류체인에서 투자 기회를 찾을 때 모델을 만드는 기업뿐 아니라, 그 모델을 '기업이 실제로 믿고 쓸 수 있게 만들어주는' 운영·관찰 도구 기업까지 함께 봐야, AI 생태계 전체에서 돈이 흐르는 경로를 더 정확히 짚어낼 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "japan",
+      "no": "05",
+      "title": "일본 경제·시장",
+      "slug": "Japan",
+      "items": [
+        {
+          "tag": "로지스티드네오비아인수KKR3자물류IPO앞두고1조엔매출",
+          "title": "KKR 산하 일본 로지스티드, 美 네오비아 인수…3자물류 1조엔 매출 기업 탄생",
+          "source": {
+            "name": "Nikkei Asia",
+            "url": "https://asia.nikkei.com/business/business-deals/japan-s-logisteed-to-buy-us-peer-neovia-expanding-3rd-party-logistics",
+            "date": "2026.11.20"
+          },
+          "f1": "닛케이아시아는 KKR이 지배하는 일본 물류그룹 로지스티드가 미국 3자물류(3PL) 기업 네오비아로지스틱스를 인수하기로 합의했다고 보도했어요. 매체는 이번 인수로 두 회사의 연매출을 합치면 약 1조엔(약 6조3000억원) 규모가 된다고 전했어요. 매체는 네오비아가 현재 오크트리·에어리즈·벡터캐피털 등 사모펀드들이 보유한 회사이며, 인수 완료 후에는 로지스티드의 완전 자회사가 된다고 전했어요. 매체는 네오비아의 기존 경영진은 그대로 유지된다고 전했어요.",
+          "f2": "매체는 네오비아가 자동차·항공우주·방산·산업재·기술 분야 고객사를 대상으로 19개국에서 100개 이상의 고객 운영을 수행하며 직원 6500명 이상을 두고 있다고 전했어요. 매체는 두 회사의 지역별 매출 비중이 상호 보완적이라고 전했는데, 네오비아는 매출의 약 54%를 북미, 40%를 유럽에서 올리는 반면 로지스티드는 매출의 약 71%를 아시아태평양에서 올리고 있어 두 회사 사업 간 중복이 거의 없다고 전했어요. 매체는 블룸버그를 인용해 이번 인수가 로지스티드의 예정된 증시 상장(IPO)을 앞두고 글로벌 사업 기반을 다지기 위한 포석이라고 전했어요. 매체는 이번 거래가 역삼각합병 방식으로 진행되며, 인수 완료 시점은 2027년 1~3월로 예상된다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 일본 물류기업이 아시아 지역 매출에 치우친 사업 구조를 인수합병 한 번으로 보완하면서 '글로벌 3자물류 기업'으로 거듭나려 한다는 점이에요. 네오비아와 로지스티드가 매출 지역이 거의 겹치지 않는다는 사실은, 이번 인수가 비용 절감을 위한 중복 사업 통합이 아니라 서로의 빈 지역을 메우는 '지역 보완형' 인수합병이라는 걸 보여줘요. 상장을 앞두고 글로벌 매출 비중을 먼저 끌어올린다는 전략은, 투자자들에게 '아시아에 치우친 로컬 기업'이 아니라 '글로벌 3자물류 플레이어'라는 이야기를 들려주기 위한 사전 작업으로도 읽을 수 있어요. 컨설팅 관점에서는 상장을 준비하는 기업의 인수합병을 평가할 때 '매출 규모가 얼마나 커지는가'보다 '그 인수가 상장 스토리에서 어떤 약점을 메워주는가'를 봐야, 그 거래가 단순한 외형 확장인지 전략적 포지셔닝인지를 구분할 수 있어요.",
+          "vocab": {
+            "w": "逆三角合併",
+            "r": "gyaku sankaku gappei",
+            "m": "'역삼각합병'을 뜻하는 일본어 표현이에요. 인수하는 회사가 자회사를 새로 만들어 그 자회사를 인수대상 회사와 합병시키고, 인수대상 회사만 법인격을 남겨 인수회사의 완전자회사로 만드는 기업인수 기법이에요. 오늘 기사에서 로지스티드가 네오비아를 인수할 때 쓴 방식으로, 이렇게 하면 네오비아라는 법인격과 기존 계약·라이선스를 그대로 유지하면서도 소유권만 로지스티드로 넘길 수 있어 복잡한 국가별 재계약 절차를 피할 수 있어요."
+          }
+        }
+      ]
+    }
+  ],
+  "industry": {
+    "name": "롱제비티(장수) 산업",
+    "valueChain": "기초 노화생물학 연구(대학·바이오텍) → 후보물질 발굴·전임상(제약·바이오텍) → 임상시험(병원·CRO) → 규제 승인(식약처·FDA) → 의료기관·소비자 대상 처방·시술·보조제 공급",
+    "bm": "롱제비티 산업은 신약 하나를 수십 년간 독점 판매하는 전통 제약과 달리 항노화 치료제·진단·웨어러블·보조제 등 여러 제품을 포트폴리오로 묶어 파는 구조라, 초기엔 임상 데이터로 신뢰를 쌓고 이후엔 구독형 관리 서비스로 고객을 묶어두는 방식으로 돈을 번다.",
+    "ksf": "① 수년씩 걸리는 임상시험을 끝까지 버텨낼 수 있는 자금력과 인내심, ② 단일 질병이 아니라 노화라는 복합적 현상을 다루기 위해 유전학·대사·면역학 등 여러 분야를 아우르는 연구 역량, ③ 아직 정해진 치료 표준이 없는 시장에서 소비자와 의료진의 신뢰를 먼저 얻어내는 임상적 설득력",
+    "issue": "ER-100 같은 후성유전학적 재프로그래밍 기술을 가진 바이오텍들은 아직 환자 3명 규모의 초기 임상 데이터만 갖고 있어, 과장된 기대와 실제 상용화 가능성 사이의 간극을 어떻게 좁히느냐가 업계 전체의 최대 과제로 꼽힌다."
+  },
+  "bcg": [
+    {
+      "titleKo": "AI 거버넌스를 실행에 옮긴 은행이 AI 활용에서도 앞서간다 — BCG 은행 AI 안전·거버넌스 벤치마크 2026",
+      "title": "Why Operationalizing Governance Gives Banks an Advantage in Scaling AI",
+      "url": "https://www.bcg.com/publications/2026/ai-governance-banking-benchmark",
+      "summary": "BCG는 전 세계 26개 은행을 대상으로 AI 도입 수준과 AI 리스크 관리 수준을 함께 평가한 벤치마크를 발표했어요. 보고서는 AI 거버넌스를 실제로 '실행'에 옮긴 상위 3분의1 은행이, 그렇지 못한 은행보다 AI를 앞서 도입한 '어드밴스드 어답터'일 가능성이 2.5배 높다고 밝혔어요. 보고서는 조사 대상 은행의 73%가 특정 용도에 한해 AI 에이전트를 실제 운영 환경에 허용하고 있지만, 88%의 은행에서는 에이전트가 전체 AI 포트폴리오의 10% 이하에 그친다고 전했어요. 보고서는 은행의 96%가 기존 리스크관리 체계 안에서 AI 리스크를 관리하고 있지만, 절반도 안 되는 은행만 중앙화된 도구 기반의 AI 인벤토리를 갖추고 있고, 모든 AI 시스템에 일관되게 적용되는 인간 감독 체계를 갖춘 은행은 단 한 곳도 없다고 지적했어요. 보고서는 은행의 46%가 최근 12개월 동안 AI 관련 사고나 이슈를 최소 한 차례 겪었다고 밝혔어요.",
+      "soWhat": "오늘 다룬 랭체인의 AI 에이전트 인프라 투자 열풍도 결국 'AI 에이전트를 실제 업무에 투입할 수 있느냐'의 문제인데, 이 보고서는 그 전제조건이 기술력이 아니라 AI 리스크를 다루는 거버넌스 체계를 실제로 '실행'해봤는지에 달려 있다는 걸 보여줘요. 컨설팅 관점에서는 기업의 AI 성숙도를 평가할 때 AI 도입 속도만 볼 게 아니라 그 기업이 AI 거버넌스를 문서로만 갖추고 있는지, 실제 운영에 적용해봤는지를 함께 봐야, 그 기업이 AI를 더 빠르고 안전하게 확장할 수 있을지를 더 정확히 가늠할 수 있어요."
+    }
+  ],
+  "story": "오늘 이야기는 튀르키예에서 시작할게. 11월9일부터 안탈리아에서 열린 유엔기후총회(COP31)가 원래 20일에 끝날 예정이었는데, 이틀을 더 끌면서 역대 가장 길게 열린 기후총회가 됐어. 근데 결국 22일(일)에 합의문 없이 '빈손'으로 끝나버렸어. ABC뉴스에 따르면 이렇게 협상이 완전히 결렬된 건 2009년 코펜하겐 총회 이후 17년 만에 처음이래. 핵심 쟁점은 '화석연료 사용을 줄이겠다'는 문구를 최종 문서에 넣을지였는데, EU 같은 나라들은 그 문구가 빠진 초안을 거부했고 사우디아라비아 같은 산유국들은 반대로 그 문구 자체를 반대했어. 유엔 사무총장 구테흐스는 이 결과를 '매우 실망스럽다'고 했어. 198개 나라가 모두 동의해야 하는 협상이 딱 하나의 쟁점 앞에서 17년 만에 멈춰선 거야.\n\n미국에서는 AI 기업 앤트로픽의 주가가 화제였어. 지난 19일 주당 83달러에 나스닥에 상장해서 1조3000억 달러 넘는 기업가치로 거래를 시작했는데, 바로 다음날인 20일(금)에 8.5% 넘게 떨어지면서 나스닥지수가 그해 쌓아온 수익률을 전부 날려버렸대. 그 하락세가 계속 이어지면서 24일(화)엔 결국 공모가 83달러 아래인 81.91달러(-6.5%)로 마감했어. 공모가 밑으로 떨어지는 데 걸린 시간이 딱 4거래일인데, 작년에 상장한 스페이스X가 21거래일이나 공모가를 지켰던 거랑 비교하면 엄청 짧은 거야. CNBC에 따르면 '앤트로픽·오픈AI 직원들이 자기 회사 최신 모델이 공개하기엔 너무 강력하다고 걱정한다'는 액시오스 보도가 투자자들을 흔든 것도 한 이유래.\n\n한국에서는 조선비즈가 재밌는 산업 이야기를 다뤘어. '롱제비티(장수) 산업'이라는, 노화 세포를 되살리고 근육을 지켜서 건강수명을 늘리는 기술들이 새로운 투자 테마로 뜨고 있다는 거야. 조선비즈는 이 흐름에 맞춰 12월4일에 '롱제비티가 여는 미래'를 주제로 헬스케어이노베이션포럼을 연대. 기사에서 소개한 'ER-100'이라는 물질은 DNA 염기서열 자체는 안 바꾸고 유전자가 켜지고 꺼지는 스위치만 조절하는 '후성유전학적 재프로그래밍' 기술을 쓰는데, 아직 환자 3명한테 56일 투여해본 초기 임상 단계래. 그래도 그중 2명한테서 시야 검사 지표가 좋아지는 신호가 보였다니, 앞으로 지켜볼 만한 분야야.\n\n같은 날 삼성전자는 임원 131명 승진 인사를 발표했어. 작년(161명)보다는 줄었는데, HBM4 세계 최초 양산을 이끈 하경수 D램설계2그룹장이나 수율 확보에 기여한 박태훈 D램YE팀장 같은 반도체 핵심 인력들은 전부 부사장으로 올라갔어. 로봇 분야에서도 형승용 로보틱스시스템그룹장이 상무로 승진했고, 신임 여성 승진자는 11명으로 역대 최대래. 전체 승진 숫자는 줄었지만 핵심 기술·신사업 인재는 오히려 전면에 배치됐다는 게 눈에 띄는 포인트야.\n\n테크 쪽에서는 AI 에이전트 인프라 스타트업 '랭체인'이 캐피털G 주도로 3억 달러(약 3000억원)를 투자받아서 기업가치 30억 달러(약 3조원)를 인정받았어. 1년 전 시리즈B 때 12억5000만 달러였던 거랑 비교하면 2.4배 넘게 뛴 거야. 랭체인은 기업들이 AI 에이전트를 직접 만들고 운영하게 도와주는 회사인데, 모니터링 도구인 '랭스미스' 고객사가 벌써 7000곳을 넘었대. 모델을 만드는 회사들 못지않게, 그 모델이 제대로 작동하는지 확인해주는 '인프라' 회사의 몸값도 같이 뛰고 있는 거야.\n\n마지막은 일본 얘기야. KKR이 지배하는 일본 물류그룹 '로지스티드'가 미국 3자물류 기업 네오비아를 인수하기로 했어. 두 회사 매출을 합치면 1조엔(약 6조3000억원) 규모가 되는데, 닛케이아시아에 따르면 네오비아는 매출의 54%를 북미에서, 로지스티드는 71%를 아시아태평양에서 올리고 있어서 두 회사 사업이 거의 안 겹친대. 이 거래는 '역삼각합병'이라는 방식으로 진행되는데, 네오비아라는 회사는 그대로 남기고 소유권만 로지스티드로 넘기는 기법이야. 블룸버그에 따르면 로지스티드가 예정된 상장을 앞두고 '아시아 로컬 기업'이 아니라 '글로벌 3자물류 기업'이라는 이야기를 들려주기 위한 포석이라고 해.\n\n오늘 하루를 정리하면, 큰 기대 속에 시작됐던 일들이 생각만큼 쉽게 마무리되지 않는 날이었어. 17년 만에 처음으로 합의 없이 끝난 기후총회, 상장 나흘 만에 무너진 앤트로픽 주가가 그랬고, 흑해에서 시작된 드론 공격이 폴란드 영공과 리비아 벵가지까지 번지며 우크라이나 전쟁이 전선 밖으로 계속 확산되고 있는 것도 비슷한 흐름이야(자세한 건 오늘의 따라잡기에서 다뤘어). 반면 한국의 롱제비티 산업, 삼성전자의 인재 재배치, 랭체인의 투자 유치, 일본 로지스티드의 인수합병은 각자의 영역에서 묵묵히 다음 단계를 준비하는 모습을 보여줬어."
+};
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s => (s==null?"":String(s));
+const nowKST = new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'});
+if(BRIEFING.indices && BRIEFING.indices.length){ $("#indices").innerHTML = BRIEFING.indices.map(x=>{ const n=parseFloat(String(x.changePct).replace(/[^0-9.\-]/g,"")); const dir = n>0?"up":(n<0?"down":"flat"); const arrow = dir==="up"?"▲":(dir==="down"?"▼":"—"); return `<div class="idxcard"><div class="iname2">${esc(x.name)}</div><div class="ival">${esc(x.value)}</div><div class="ichg ${dir}">${arrow} ${esc(x.changePct)}%</div><div class="inote">${esc(x.note||"")}</div></div>`; }).join(""); } else { $("#indices").style.display="none"; }
+$("#meta").innerHTML = `<b><a href="archive.html" style="text-decoration:underline;text-decoration-color:var(--accent-soft)" title="지난 브리핑 모아보기">${esc(BRIEFING.dateLabel)}</a></b><span>·</span><span>${esc(BRIEFING.city||'Seoul')} · ${nowKST} KST 열람</span>`;
+$("#mood").textContent = BRIEFING.mood || "";
+$("#heads").innerHTML = BRIEFING.headliners.map(h=>`<li>${esc(h)}</li>`).join("");
+const cu = BRIEFING.catchup;
+if(cu){ $("#catchup").innerHTML = `<span class="ck">🕰️ 오늘의 따라잡기 — 처음부터 이해하기</span><h3>${esc(cu.topic)}</h3><p class="intro">${esc(cu.intro)}</p><ul class="tl">${(cu.timeline||[]).map(t=>`<li><span class="d">${esc(t.d)}</span>${esc(t.e)}</li>`).join("")}</ul><div class="why">${cu.why||""}</div>`; } else { $("#catchup").style.display="none"; }
+if(BRIEFING.story){ const storyParas = BRIEFING.story.split(/\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join(""); $("#story").innerHTML = `<span class="sk">📖 오늘의 이야기</span>${storyParas}`; } else { $("#story").style.display="none"; }
+const navItems = [...BRIEFING.sections.map(s=>({id:s.id,no:s.no,title:s.title})), ...(BRIEFING.industry ? [{id:"industry",no:"🏭",title:"산업"}] : []), ...(BRIEFING.bcg && BRIEFING.bcg.length ? [{id:"bcg",no:"📘",title:"BCG"}] : []), ...(BRIEFING.hkmarket ? [{id:"hkmarket",no:"📺",title:"한경마켓"}] : [])];
+$("#nav").innerHTML = navItems.map(n=> `<a href="#${n.id}" data-id="${n.id}"><span class="n">${esc(n.no)}</span>${esc(n.title)}</a>`).join("");
+function srcHtml(s){ if(!s) return ""; const link = s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">원문(${esc(s.date)})↗</a>` : (s.date?` · ${esc(s.date)}`:""); return `<span class="item__src">${esc(s.name)}${link}</span>`; }
+function fieldRow(lab,val,cls){return val?`<div class="field ${cls||""}"><span class="lab">${lab}</span><span class="val">${val}</span></div>`:""}
+function termsRow(terms){ if(!terms||!terms.length) return ""; return `<div class="terms"><div class="th">📖 용어 풀이</div>${terms.map(t=>`<div class="t"><b>${esc(t.t)}</b> — ${esc(t.d)}</div>`).join("")}</div>`; }
+function vocabRow(v){ if(!v) return ""; return `<div class="jword"><span class="jw-badge">🇯🇵 오늘의 비즈니스 일본어</span><span class="jw-text"><b>${esc(v.w)}</b> <span class="jw-r">(${esc(v.r)})</span> — ${esc(v.m)}</span></div>`; }
+function itemCard(it){ return `<article class="item open"><button class="item__head" aria-expanded="true" type="button"><span class="tag">${esc(it.tag)}</span><span><span class="item__title">${esc(it.title)}</span><br>${srcHtml(it.source)}</span><span class="chev">▾</span></button><div class="item__wrap"><div class="item__body"><div class="item__inner">${fieldRow("무슨 일",it.f1)}${fieldRow("그동안의 이야기",it.f2,"story")}${fieldRow("So What",it.f3)}${termsRow(it.terms)}${vocabRow(it.vocab)}</div></div></div></article>`; }
+let html = BRIEFING.sections.map(s=>`<section class="block" id="${s.id}"><div class="shead"><span class="no">${esc(s.no)}</span><h2>${esc(s.title)}</h2><span class="slug">${esc(s.slug)}</span></div>${s.items.map(itemCard).join("")}</section>`).join("");
+if(BRIEFING.industry){ const ind=BRIEFING.industry; const indRows=[["밸류체인",ind.valueChain],["비즈니스모델",ind.bm],["경쟁력 요소",ind.ksf],["최대 이슈",ind.issue]].map(([lab,val])=>fieldRow(lab,esc(val))).join(""); html += `<section class="block" id="industry"><div class="shead"><span class="no">🏭</span><h2>오늘의 산업 소개</h2><span class="slug">Industry</span></div><div class="industrycard"><span class="ik">🏭 오늘의 산업 소개</span><div class="iname">${esc(ind.name||"")}</div><div class="ifields">${indRows}</div></div></section>`; }
+if(BRIEFING.bcg && BRIEFING.bcg.length){ const bcgItems=BRIEFING.bcg.map(b=>`<div class="bcgitem"><div class="btitle">${esc(b.titleKo)}</div><div class="borig">${esc(b.title)}</div><p class="bsum">${esc(b.summary)}</p><div class="bsw"><b>So What</b> — ${esc(b.soWhat)}</div><a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">원문 보기 ↗</a></div>`).join(""); html += `<section class="block" id="bcg"><div class="shead"><span class="no">📘</span><h2>BCG 인사이트</h2><span class="slug">BCG Publications</span></div>${bcgItems}</section>`; }
+if(BRIEFING.hkmarket){ const hk=BRIEFING.hkmarket; const hkTopics=(hk.topics||[]).map(t=>`<div class="hktopic"><div class="httl">${esc(t.topic)}</div><div class="hdet">${esc(t.detail)}</div></div>`).join(""); html += `<section class="block" id="hkmarket"><div class="shead"><span class="no">📺</span><h2>한경코리아마켓</h2><span class="slug">YouTube Morning Brief</span></div><div class="hkmeta">${esc(hk.broadcastLabel||"")} · <a href="${esc(hk.videoUrl||"")}" target="_blank" rel="noopener">${esc(hk.videoTitle||"원본 방송 보기")} ↗</a></div>${hkTopics}</section>`; }
+$("#main").innerHTML = html;
+$("#main").insertAdjacentHTML("beforeend",`<footer>소스 정책: BBC · ABC · 조선비즈(산업) · TechCrunch · ZDNet · Gizmodo · 일본 주요 경제매체 · BCG · 한경코리아마켓(유튜브) — 작성 시점 검색·교차 확인 기준.<br>전황·시세는 빠르게 변하므로 중요한 판단 전 원문 확인 권장.<br>💡 매일 아침 9:30 KST에 이 페이지가 자동으로 새 브리핑으로 갱신됩니다. · 📚 <a href="archive.html">지난 브리핑 모아보기</a></footer>`);
+document.querySelectorAll(".item__head").forEach(h=>{ h.addEventListener("click",()=>{ const it=h.closest(".item"); const open=it.classList.toggle("open"); h.setAttribute("aria-expanded",open?"true":"false"); }); });
+const allBtn=$("#toggleAll"), allLab=$("#toggleAllLabel");
+allBtn.addEventListener("click",()=>{ const items=[...document.querySelectorAll(".item")]; const anyClosed=items.some(i=>!i.classList.contains("open")); items.forEach(i=>{i.classList.toggle("open",anyClosed); i.querySelector(".item__head").setAttribute("aria-expanded",anyClosed?"true":"false");}); allLab.textContent=anyClosed?"접기":"펼치기"; });
+const root=document.documentElement;
+$("#theme").addEventListener("click",()=>{root.setAttribute("data-theme", root.getAttribute("data-theme")==="dark"?"light":"dark");});
+$("#print").addEventListener("click",()=>window.print());
+const links=[...document.querySelectorAll(".navlinks a")];
+const spy=new IntersectionObserver(ents=>{ ents.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle("active",l.dataset.id===e.target.id));}}); },{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll("section.block").forEach(s=>spy.observe(s));
+</script>
+</body>
+</html>
