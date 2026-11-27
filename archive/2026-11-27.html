@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<!--
+  Daily Compass — BRIEFING 데이터 사용법
+  이 파일을 수정할 때는 스타일 정의와 렌더링 스크립트 로직은 건드리지 말고,
+  본문에 있는 실제 BRIEFING 데이터 객체의 값만 매일 새로 채워 넣으세요.
+
+  필수 필드: dateLabel, city, mood, headliners[3], catchup, sections[5], story, industry, bcg
+  탭은 정확히 7개: 세계 / 글로벌 경제·시장 / 한국 경제·시장 / 테크·AI / 일본 경제·시장 / 산업 소개 / BCG 인사이트
+  (생각거리·일정 섹션은 폐지됨 — think/calendar 필드는 더 이상 사용하지 않습니다)
+
+  ▸ indices (선택, array) — 페이지 맨 위 주가지수 바. 없으면 자동으로 숨겨집니다.
+    [{ name: "코스피", value: "3,412.5", changePct: "+1.8", note: "최근 1개월 평균 대비 높은 수준" }, ...]
+
+  ▸ story (필수, string) — "오늘의 이야기". 오늘 다룬 모든 기사를 스토리텔링 형식으로 훑어주는 글.
+    헤드라인 바로 아래에 표시됩니다. 문단을 나누려면 줄바꿈(\n)을 사용하세요.
+
+  ▸ sections[5] — 각 section의 items 배열 안 f1(무슨 일)/f2(그동안의 이야기)/f3(So What)는
+    각각 최소 3~4문장 분량으로 작성합니다 (짧은 한두 줄 요약 금지).
+
+  ▸ industry (필수, object) — "오늘의 산업 소개".
+    { name: "산업 이름", valueChain: "밸류체인 한 줄(MECE)", bm: "비즈니스모델 1~2줄", ksf: "경쟁력 요소 1~2줄", issue: "최대 이슈(주요 플레이어 포함) 1~2줄" }
+
+  ▸ bcg (필수, array, 1개) — "BCG 인사이트".
+    [{ titleKo: "한글 제목", title: "원제", url: "https://www.bcg.com/...", summary: "3~4문장 요약", soWhat: "한 문장 시사점" }]
+
+  ▸ hkmarket (선택, object) — "한경코리아마켓". 유튜브 아침 방송 자막을 주제별로 정리한 8번째 탭.
+    없으면 자동으로 숨겨집니다 (예: 자막 추출 실패, 또는 이 필드를 채우지 않는 발행 경로).
+    { videoTitle: "영상 제목", videoUrl: "https://www.youtube.com/watch?v=...", broadcastLabel: "2026.08.14 (금) 8:00 방송",
+      topics: [{ topic: "주제 제목", detail: "2~4문장 요약" }, ...] }
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Compass — 2026.11.27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#EBF3FA;--card:#FFFFFF;--ink:#211D2B;--ink-soft:#645C74;--line:#DAD5E2;--accent:#1E7FBF;--accent-ink:#0B4A73;--accent-soft:rgba(30,127,191,.12);--warm:#2E6F95;--warm-soft:rgba(46,111,149,.12);--up:#C4453C;--down:#2B62C9;--flat:#7B7787;--display:'Noto Sans KR','Malgun Gothic',sans-serif;--body:'Noto Sans KR','Malgun Gothic',system-ui,-apple-system,sans-serif;--mono:'Noto Sans KR','Malgun Gothic',sans-serif;--maxw:860px;}
+  [data-theme="dark"]{--paper:#131019;--card:#1C1826;--ink:#EDE9F4;--ink-soft:#A79FBA;--line:#322B42;--accent:#7DD3FC;--accent-ink:#7DD3FC;--accent-soft:rgba(125,211,252,.14);--warm:#E39358;--warm-soft:rgba(227,147,88,.13);--up:#F0736A;--down:#6E9BEF;--flat:#8D889B;}
+  *{box-sizing:border-box} html{scroll-behavior:smooth} @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.66;-webkit-font-smoothing:antialiased} a{color:inherit} .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .masthead{padding:36px 0 20px;border-bottom:2.5px solid var(--ink)} .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;display:flex;gap:10px;align-items:center} .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2.6s ease-in-out infinite} @media (prefers-reduced-motion:reduce){.eyebrow .dot{animation:none}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .title{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,56px);line-height:1.05;letter-spacing:-.01em;margin:12px 0 0} .title .amp{color:var(--accent-ink)}
+  .meta{margin-top:12px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center} .meta b{color:var(--ink);font-weight:600}
+  .mood{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 13px;border:1.5px solid var(--accent);border-radius:999px;background:var(--accent-soft);font-size:13px;font-weight:700}
+  .lead{margin:20px 0 6px;padding:17px 20px 18px;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 10px 10px 0} .lead .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  .heads{margin:10px 0 0;padding:0;list-style:none;counter-reset:h;display:grid;gap:9px} .heads li{position:relative;padding-left:32px;font-family:var(--display);font-weight:700;font-size:15.5px;line-height:1.45} .heads li::before{counter-increment:h;content:counter(h);position:absolute;left:0;top:2px;font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent-ink);border:1px solid var(--accent-ink);border-radius:5px;width:20px;height:20px;display:grid;place-items:center}
+  .catchup{margin:18px 0 0;background:var(--card);border:1.5px solid var(--warm);border-radius:14px;padding:18px 20px} .catchup .ck{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--warm);font-weight:700} .catchup h3{margin:7px 0 4px;font-family:var(--display);font-size:19px;font-weight:800} .catchup .intro{margin:0 0 12px;font-size:13.5px;color:var(--ink-soft)}
+  .tl{margin:0;padding:0;list-style:none;border-left:2px solid var(--warm);margin-left:6px} .tl li{position:relative;padding:0 0 12px 18px;font-size:13.5px} .tl li::before{content:"";position:absolute;left:-6px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--paper);border:2.5px solid var(--warm)} .tl .d{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--warm);display:block}
+  .catchup .why{margin:12px 0 0;padding:11px 13px;background:var(--warm-soft);border-radius:9px;font-size:13.5px} .catchup .why b{color:var(--warm)}
+  nav.bar{position:sticky;top:0;z-index:30;margin-top:20px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper) 88%, transparent);backdrop-filter:blur(10px)} .bar__in{max-width:var(--maxw);margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:8px}
+  .navlinks{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1} .navlinks::-webkit-scrollbar{display:none} .navlinks a{flex:0 0 auto;text-decoration:none;font-size:13px;font-weight:600;color:var(--ink-soft);padding:6px 11px;border-radius:8px;white-space:nowrap} .navlinks a .n{font-family:var(--mono);color:var(--accent-ink);margin-right:5px;font-size:11.5px} .navlinks a:hover{background:var(--accent-soft);color:var(--ink)} .navlinks a.active{background:var(--ink);color:var(--paper)} .navlinks a.active .n{color:var(--paper)}
+  .tools{display:flex;gap:6px} .tools button{font-family:var(--body);font-size:12.5px;font-weight:600;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;cursor:pointer} .tools button:hover{color:var(--ink);border-color:var(--accent)} .tools button:focus-visible,.navlinks a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .block{padding:26px 0 4px} .shead{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px} .shead .no{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent-ink)} .shead h2{font-family:var(--display);font-weight:800;font-size:21px;margin:0} .shead .slug{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden} .item__head{width:100%;display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:none;border:0;cursor:pointer;text-align:left;font-family:var(--body);color:var(--ink)} .tag{flex:0 0 auto;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink);margin-top:2px} .item__title{font-weight:700;font-size:15px;line-height:1.45} .item__src{font-family:var(--mono);font-size:11px;color:var(--ink-soft)} .item__src a{color:var(--accent-ink)} .chev{margin-left:auto;flex:0 0 auto;color:var(--ink-soft);transition:transform .2s} .item.open .chev{transform:rotate(180deg)}
+  .item__wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .24s ease} .item.open .item__wrap{grid-template-rows:1fr} .item__body{overflow:hidden} .item__inner{padding:2px 15px 15px;display:grid;gap:9px}
+  .field{display:grid;grid-template-columns:92px 1fr;gap:10px;font-size:13.5px} .field .lab{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--accent-ink);padding-top:3px} .field.story .lab{color:var(--warm)} .field.story .val{background:var(--warm-soft);border-radius:8px;padding:9px 11px} .field .val b{color:var(--accent-ink)} @media (max-width:520px){.field{grid-template-columns:1fr}.field .lab{padding-top:0}}
+  .terms{margin-top:2px;padding:10px 12px;border:1px dashed var(--line);border-radius:9px;background:color-mix(in srgb,var(--paper) 55%, transparent)} .terms .th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:5px} .terms .t{font-size:12.8px;color:var(--ink-soft);line-height:1.6;margin:2px 0} .terms .t b{color:var(--ink);font-weight:700}
+  .jword{margin-top:2px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap} .jword .jw-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent-ink);white-space:nowrap} .jword .jw-text{font-size:13px;color:var(--ink);line-height:1.6} .jword .jw-text b{font-family:var(--display);font-size:15px} .jword .jw-r{color:var(--ink-soft);font-size:12px}
+  footer{margin:34px 0 46px;padding-top:14px;border-top:2.5px solid var(--ink);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.8} footer a{color:var(--accent-ink)} @media print{nav.bar{display:none} .item__wrap{grid-template-rows:1fr!important}}
+  .dailystory{margin:18px 0 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px} .dailystory .sk{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .dailystory p{margin:12px 0 0;font-size:15.5px;line-height:1.9;color:var(--ink)} .dailystory p:first-of-type{margin-top:10px}
+  .industrycard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px} .industrycard .ik{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700} .industrycard .iname{margin:8px 0 0;font-family:var(--display);font-size:19px;font-weight:800} .industrycard .ifields{margin-top:12px;display:grid;gap:9px}
+  .idxbar{max-width:var(--maxw);margin:0 auto;padding:12px 20px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none} .idxbar::-webkit-scrollbar{display:none}
+  .idxcard{flex:0 0 auto;min-width:128px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .idxcard .iname2{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);font-weight:600}
+  .idxcard .ival{font-family:var(--display);font-weight:800;font-size:16px;margin-top:2px}
+  .idxcard .ichg{font-family:var(--mono);font-size:12px;font-weight:700;margin-top:2px}
+  .idxcard .ichg.up{color:var(--up)} .idxcard .ichg.down{color:var(--down)} .idxcard .ichg.flat{color:var(--flat)}
+  .idxcard .inote{font-size:11px;color:var(--ink-soft);margin-top:4px;line-height:1.4;max-width:160px}
+  .bcgitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:10px} .bcgitem .btitle{font-family:var(--display);font-weight:700;font-size:15.5px} .bcgitem .borig{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-style:italic} .bcgitem .bsum{margin:9px 0 0;font-size:13.5px;line-height:1.7;color:var(--ink)} .bcgitem .bsw{margin-top:9px;padding:9px 11px;background:var(--accent-soft);border-radius:8px;font-size:12.8px} .bcgitem .bsw b{color:var(--accent-ink)} .bcgitem .blink{margin-top:9px;display:inline-block;font-family:var(--mono);font-size:11.5px;color:var(--accent-ink);text-decoration:none}
+  .hkmeta{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;font-size:13px;color:var(--ink-soft)} .hkmeta a{color:var(--accent-ink);font-weight:600}
+  .hktopic{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px} .hktopic .httl{font-family:var(--display);font-weight:700;font-size:14.5px} .hktopic .hdet{margin-top:6px;font-size:13.3px;line-height:1.7;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="idxbar" id="indices"></div>
+<div class="wrap"><header class="masthead"><div class="eyebrow"><span class="dot"></span>WORLD · ECONOMY · TECH — 매일 아침 5분</div><h1 class="title">Daily <span class="amp">Compass</span></h1><div class="meta" id="meta"></div><div class="mood" id="mood"></div><div class="lead"><span class="k">오늘의 3분 — 이것만 읽어도 OK</span><ol class="heads" id="heads"></ol></div><div class="dailystory" id="story"></div><div class="catchup" id="catchup"></div></header></div>
+<nav class="bar"><div class="bar__in"><div class="navlinks" id="nav"></div><div class="tools"><button id="toggleAll" type="button">전체 <span id="toggleAllLabel">접기</span></button><button id="theme" type="button" aria-label="테마 전환">◐</button><button id="print" type="button" aria-label="인쇄">⏏</button></div></div></nav>
+<main class="wrap" id="main"></main>
+<script>
+const BRIEFING = {
+  "indices": [
+    {
+      "name": "코스피",
+      "value": "4,711.21",
+      "changePct": "+0.29",
+      "note": "11/26(목) 종가 — 한은 기준금리 인상 발표 후 장중 +2.56%였던 상승분 대부분 반납"
+    },
+    {
+      "name": "코스닥",
+      "value": "655.71",
+      "changePct": "+0.78",
+      "note": "11/26(목) 종가 — 장중 +3.01%까지 올랐으나 금리 인상 소식에 상승폭 축소"
+    },
+    {
+      "name": "나스닥",
+      "value": "23,585.80",
+      "changePct": "-0.62",
+      "note": "11/25(수, 현지시간) 종가 — 美 증시가 추수감사절 휴장이라 최근 거래일 기준치 유지"
+    },
+    {
+      "name": "다우존스",
+      "value": "50,182.95",
+      "changePct": "+0.33",
+      "note": "11/25(수, 현지시간) 종가 — 美 증시가 추수감사절 휴장이라 최근 거래일 기준치 유지"
+    },
+    {
+      "name": "닛케이225",
+      "value": "57,499.16",
+      "changePct": "+0.86",
+      "note": "11/26(목) 종가 — 장중 한때 58,000선 회복했으나 반도체주 되돌림 매물에 상승폭 축소"
+    }
+  ],
+  "dateLabel": "2026년 11월 27일 (금)",
+  "city": "Seoul",
+  "mood": "오늘은 '정작 당사자가 아닌 쪽이 더 크게 흔들리는 날'이에요. 전쟁 당사국이 아닌 쿠웨이트에서 유럽 국적자가 처음으로 목숨을 잃었고, 반도체 수출 호황이라는 호재가 오히려 한국의 기준금리를 끌어올리는 부담으로 돌아왔어요. 중국을 겨냥한 미국의 관세·수출통제는 한국·일본과 동남아 기업들에게까지 번졌고, 러시아의 정치적 결정 하나로 일본 기업의 주주들은 배당 삭감을 감수해야 했어요.",
+  "headliners": [
+    "이란제로 추정되는 드론이 쿠웨이트의 방공 감시시설을 공격해 이탈리아 방산업체 라인메탈 소속 기술자 2명이 숨졌어요. 지난 2월 발발한 이란-이스라엘·미국 전쟁에서 처음으로 확인된 유럽 국적 사망자예요.",
+    "한국은행이 반도체 수출 호황과 물가 부담을 이유로 기준금리를 3.00%에서 3.25%로 0.25%포인트 올렸어요. 2024년 11월 이후 2년 만에 가장 높은 수준이에요.",
+    "美 트럼프 행정부가 중국·EU·한국·일본 등 14개국에 '초과생산능력'을 이유로 최고 20~40%의 새 관세를 제안했어요. 최고법원이 무효화한 비상대권 관세의 대체 수단으로 무역법 301조를 동원했어요."
+  ],
+  "catchup": {
+    "topic": "이란-이스라엘·미국 전쟁 9개월째 — 2월의 기습 타격부터 쿠웨이트 피격까지",
+    "intro": "올해 2월28일 미국과 이스라엘이 이란을 동시 기습 타격하며 시작된 전쟁이 9개월 넘게 이어지고 있어요. 이스라엘·이란 간의 정면 충돌은 몇 차례의 휴전 시도 속에 소강상태로 접어들었지만, 전쟁의 불씨는 정작 참전국이 아닌 쿠웨이트 같은 걸프 국가들로 꾸준히 옮겨붙고 있어요. 2월부터 지금까지 쌓인 흐름을 정리해볼게요.",
+    "timeline": [
+      {
+        "d": "2026.02.28 (토)",
+        "e": "미국이 '에픽퓨리 작전', 이스라엘이 '로어링라이언 작전'이라는 이름으로 이란을 동시 기습 타격하며 전쟁이 시작됐어요. 이란 최고지도자 하메네이와 고위 관료 수십명이 첫 공습에서 사망했어요."
+      },
+      {
+        "d": "2026.03 초",
+        "e": "이란이 이스라엘과 걸프 국가들, 미군 기지를 향해 미사일·드론으로 반격에 나섰고, 호르무즈 해협 봉쇄 가능성까지 거론되며 국제 유가가 급등했어요. 레바논 헤즈볼라도 이스라엘을 향해 미사일·드론을 쏘며 전선에 가세했어요."
+      },
+      {
+        "d": "2026.03.15~16",
+        "e": "이탈리아·미군이 주둔 중인 쿠웨이트 알리알살렘 공군기지가 드론 공격을 받아 이탈리아군 무인기 1대가 파괴됐지만 인명피해는 없었어요."
+      },
+      {
+        "d": "2026.04~08",
+        "e": "미국과 이란이 몇 차례 휴전에 합의했지만 번번이 수주 만에 깨졌고, 양측이 체결한 양해각서(MOU)도 8월 재충돌 속에 공식 파기됐어요."
+      },
+      {
+        "d": "2026.06.05~06",
+        "e": "쿠웨이트 국제공항이 이란 드론 공격을 받아 인도 국적자 1명이 숨지고 60명 넘게 다쳤어요."
+      },
+      {
+        "d": "2026.09~11.17 [약 2개월 소강]",
+        "e": "9월 초 이후 걸프 지역에 대한 공격이 뚜렷이 줄며 소강상태에 들어갔어요."
+      },
+      {
+        "d": "2026.11.17~18",
+        "e": "미국이 이란혁명수비대(IRGC) 미사일 발사시설이 있는 케슘섬을 타격하자, 이란이 하루 만에 쿠웨이트 알리알살렘 기지의 패트리엇 방공체계와 발사대를 겨냥해 재반격했어요. 쿠웨이트와 바레인이 드론을 요격해 인명피해는 없었어요."
+      },
+      {
+        "d": "2026.11.26 (목) [현재진행중]",
+        "e": "이란제로 추정되는 드론이 쿠웨이트의 방공 감시시설을 타격해 이탈리아 방산업체 라인메탈 소속 기술자 2명이 숨졌어요. 이번 전쟁이 시작된 이후 처음으로 확인된 유럽 국적 사망자이며, 이달 들어 쿠웨이트가 두 번째로 공격받은 사례예요."
+      }
+    ],
+    "why": "<b>컨설턴트 관점</b> 이 9개월의 흐름이 보여주는 패턴은, 이스라엘과 이란 양측의 정면 충돌이 소강상태에 접어들어도 전쟁이 완전히 꺼지지 않고 '당사국이 아닌 제3국'을 매개로 계속 불씨를 이어간다는 점이에요. 쿠웨이트는 이 전쟁의 당사국이 아닌데도 미군·동맹군이 주둔한다는 이유만으로 올해 최소 네 차례(3월, 6월, 11월17일, 11월26일) 공격을 받았고, 특히 11월에는 공격 간격이 열흘 이내로 좁아졌어요. 이번 11월26일 공격에서 처음으로 민간 방산기업 기술자가 목숨을 잃었다는 사실은, 전쟁이 길어질수록 피해 범위가 '군인 대 군인'에서 '방산업체의 민간 계약인력'으로까지 번질 수 있다는 걸 보여줘요. 몇 차례의 휴전과 양해각서가 모두 수개월 안에 깨졌다는 전력은, 공식적인 종전 합의가 있어도 그게 실제 공격 중단을 보장하지는 않는다는 교훈을 줘요. 컨설팅 관점에서는 중동처럼 공식 '휴전'과 실제 '공격 중단'이 따로 움직이는 지역의 리스크를 진단할 때, 종전 발표 자체보다 '최근 공격 간 간격이 좁아지는지 넓어지는지'와 '피해 대상이 군사시설에서 민간·제3국으로 번지고 있는지'를 함께 추적해야, 지금이 실제로 안정화 국면인지 재점화 국면인지를 더 정확히 판단할 수 있어요."
+  },
+  "sections": [
+    {
+      "id": "world",
+      "no": "01",
+      "title": "세계",
+      "slug": "World",
+      "items": [
+        {
+          "tag": "이란드론쿠웨이트공격이탈리아기술자2명사망라인메탈스카이가드이란전쟁9개월",
+          "title": "이란 드론, 쿠웨이트 방공시설 타격…이탈리아 기술자 2명 사망",
+          "source": {
+            "name": "ABC News",
+            "url": "https://abcnews.com/International/live-updates/iran-live-updates-tehran-strait-hormuz-safe-demands/?id=138369648",
+            "date": "2026.11.26"
+          },
+          "f1": "ABC뉴스는 11월26일(목) 쿠웨이트의 방공 감시시설이 이란제로 추정되는 드론 공격을 받아 이탈리아 국적 기술자 2명이 숨졌다고 전했어요. 매체는 이탈리아 외교장관 안토니오 타야니가 의회에 출석해, 숨진 두 사람이 독일 방산업체 라인메탈의 이탈리아 법인 소속 기술자이며 쿠웨이트의 '스카이가드' 방공체계 탐지 안테나를 정비하던 중이었다고 밝혔다고 전했어요. 매체는 쿠웨이트 국방부가 자국 영공에서 여러 대의 적대적 드론을 포착해 교전했다고 밝혔으며, 이 과정에서 쿠웨이트인 1명과 파키스탄인 1명도 다쳤다고 전했어요. 매체는 숨진 기술자 2명의 나이가 각각 36세와 65세라고 현지 통신사 ANSA를 인용해 전했어요.",
+          "f2": "매체는 이번 공격이 지난 2월28일 미국과 이스라엘이 이란을 기습 타격하며 시작된 전쟁이 아직 끝나지 않은 가운데 벌어졌다고 전했어요. 매체는 이란이 전쟁 초반 이스라엘과 걸프 국가들, 미군 기지를 향해 미사일·드론으로 반격에 나섰고 이후에도 여러 차례의 휴전 시도가 번번이 깨지며 산발적 공격이 이어져 왔다고 전했어요. 매체는 쿠웨이트가 전쟁의 당사국이 아닌데도 올해 들어 최소 네 차례—3월 알리알살렘 공군기지, 6월 쿠웨이트 국제공항, 11월17~18일 재차 알리알살렘 기지—공격을 받았으며 이번이 이달 들어 두 번째 공격이라고 전했어요. 매체는 이란의 고위 군 당국자 아볼파즐 셰카르치가 이번 공격을 '역내 불안을 키우려는 위장작전'이라며 이란의 책임을 전면 부인했고, 이란 외교장관도 쿠웨이트·이탈리아와 함께 원인 조사에 협조하겠다고 밝혔다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 2월에 시작된 이란-이스라엘·미국 전쟁이 9개월 넘게 이어지면서 전투의 무대가 점점 '당사국이 아닌 제3국'으로 번지고 있다는 점이에요. 쿠웨이트는 이 전쟁에 직접 참전하지 않았는데도 미군과 동맹군이 주둔한다는 이유만으로 올해 벌써 네 번째 공격을 받았고, 이번엔 처음으로 유럽 국적자가 목숨을 잃었어요. 민간 방산기업 소속 기술자가 전쟁터가 아닌 걸프 국가에서 방공시설을 정비하다 숨졌다는 사실은, 전쟁이 길어질수록 군인이 아닌 민간 계약직 인력까지 위험에 노출되는 반경이 넓어진다는 걸 보여줘요. 컨설팅 관점에서는 중동처럼 분쟁이 장기화된 지역에 인력을 파견하거나 자산을 둔 기업을 평가할 때 '그 나라가 전쟁 당사국인가'보다 '동맹·주둔 관계로 인해 제3국 신분임에도 공격 대상이 될 수 있는가'를 함께 봐야, 실제 운영 리스크를 더 정확히 가늠할 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "econ",
+      "no": "02",
+      "title": "글로벌 경제·시장",
+      "slug": "Economy",
+      "items": [
+        {
+          "tag": "트럼프관세14개국중국EU한국일본무역법301조초과생산능력최고40퍼센트",
+          "title": "美, 中·EU 등 14개국에 최고 20~40% '초과생산능력' 관세 제안",
+          "source": {
+            "name": "ABC News",
+            "url": "https://abcnews.com/Politics/trump-admin-proposes-new-tariffs-china-eu-12/story?id=138442698",
+            "date": "2026.11.25"
+          },
+          "f1": "ABC뉴스는 11월25일(수) 트럼프 행정부가 중국·유럽연합(EU)을 포함한 14개 교역국에 새로운 관세를 부과하겠다고 제안했다고 전했어요. 매체는 미무역대표부(USTR)가 무역법 301조에 근거해 '초과 생산설비'를 이유로 중국, EU, 일본, 한국, 대만, 말레이시아, 인도, 베트남, 태국, 싱가포르, 인도네시아, 캄보디아, 방글라데시, 스위스 등 14개국·지역을 조사 대상으로 삼았다고 전했어요. 매체는 중국에는 기존 301조 관세에 추가로 20%포인트를 더 얹고, 협상이 결렬되거나 중국이 약속을 어길 경우 최고 40%까지 올릴 수 있다고 전했어요. 매체는 EU·일본·한국·대만·스위스에는 기본 관세를 포함해 15% 수준의 관세가 적용될 예정이라고 전했어요.",
+          "f2": "매체는 이번 조치가 올해 2월 미국 최고법원이 트럼프 대통령의 비상대권(IEEPA)에 근거한 광범위한 관세를 무효로 판결한 뒤 줄어든 관세 수입을 메우기 위한 대체 수단이라고 전했어요. 매체는 USTR 대표 제이미슨 그리어가 방송에 출연해 새 관세가 몇 달 안에는 시행되지 않을 것이며 법원과 의회에서 법적 다툼이 벌어질 걸로 예상한다고 밝혔다고 전했어요. 매체는 백악관 고위 관리가 중국을 포함한 모든 대상국에 이미 통보했으며 보복 조치는 없을 것으로 본다고 말했다고 전했어요. 매체는 중국 외교부가 '초과생산' 명분을 '거짓 서사'라며 반박했고, 미국 민주당 상원 원내대표 척 슈머는 오히려 \"진짜 문제는 중국\"이라며 정부 방침에 동조하는 듯한 반응을 보였다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 최고법원이 대통령의 비상대권에 기댄 관세를 무효화해도 행정부가 '무역법 301조'라는 다른 법적 근거를 찾아 사실상 비슷한 효과의 관세를 다시 쌓아올릴 수 있다는 점이에요. 14개국이라는 대상 범위에 멕시코·노르웨이는 빠지고 한국·일본·대만처럼 미국과 이미 무역협정을 맺은 나라들까지 포함됐다는 사실은, 기존에 협상을 마친 나라라고 해서 관세 리스크에서 완전히 자유로워지는 게 아니라는 걸 보여줘요. 몇 달의 시차를 두고 시행되고 법정 다툼까지 예고된 상황은, 기업들이 관세가 '발표된 순간'이 아니라 '실제 적용되는 시점'까지 불확실성을 안고 가야 한다는 뜻이기도 해요. 컨설팅 관점에서는 관세 리스크를 평가할 때 특정 법적 근거(비상대권이냐 무역법 301조냐)에 의존하는 과거의 틀보다, 행정부가 쓸 수 있는 '대체 법적 경로가 몇 개나 남아있는지'를 함께 짚어야 관세 정책의 지속가능성을 더 정확히 가늠할 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "korea",
+      "no": "03",
+      "title": "한국 경제·시장",
+      "slug": "Korea",
+      "items": [
+        {
+          "tag": "한은기준금리325퍼센트인상반도체호황물가2년만에최고점도표추가인상",
+          "title": "한은, 반도체 호황·물가 부담에 기준금리 3.25%로 인상…2년 만에 최고",
+          "source": {
+            "name": "이투데이",
+            "url": "https://www.etoday.co.kr/news/view/2653240",
+            "date": "2026.11.26"
+          },
+          "f1": "이투데이는 한국은행 금융통화위원회가 11월26일(목) 기준금리를 연 3.00%에서 3.25%로 0.25%포인트 올렸다고 보도했어요. 매체는 금통위원 7명 중 5명이 인상에 찬성했고 황건일·이수형 위원 2명은 동결 의견을 냈다고 전했어요. 매체는 이번 인상이 올해 들어 세 번째이며, 기준금리가 2024년 11월 이후 2년 만에 가장 높은 수준으로 올라섰다고 전했어요. 매체는 신현송 총재가 강한 성장세가 이어지는 가운데 고유가가 장기화되고 있어 물가 안정에 더 중점을 둬야 한다고 설명했다고 전했어요.",
+          "f2": "매체는 이번 인상의 배경으로 반도체 수출 호황에 따른 경기 회복세와 물가·금융안정 우려가 함께 꼽힌다고 전했어요. 매체는 올해 3분기까지 경상수지가 역대급 반도체 수출 호황에 힘입어 3406억6000만달러로 집계됐다고 전했어요. 매체는 한은이 2026년 성장률 전망을 3.9%로, 2027년 전망은 지난 8월 제시한 2.9%에서 4.1%로 큰 폭 상향했다고 전했어요. 매체는 금통위원들의 점도표에서 8명이 3.50%를, 7명이 3.75%를 다음 금리 수준으로 제시하며 추가 인상 쪽에 무게가 실렸다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 반도체 수출 호황이라는 '좋은 뉴스'가 오히려 기준금리를 끌어올리는 '부담 요인'으로 작용할 수 있다는 점이에요. 코스피가 전날 급락 충격에서 막 반등하려던 참에 금리 인상이 발표되자 장중 2%대였던 상승폭이 0.29%까지 쪼그라들었다는 사실은, 성장률 전망 상향이라는 호재조차 금리 인상 소식 앞에서는 힘을 잃을 수 있다는 걸 보여줘요. 가계대출 금리가 이미 오르고 있는 상황에서 추가 인상 가능성까지 예고됐다는 점은, 반도체 수출로 벌어들인 돈이 가계의 이자 부담 증가로 상당 부분 상쇄될 수 있다는 뜻이기도 해요. 컨설팅 관점에서는 특정 산업의 수출 호황이 경제 전체에 미치는 영향을 평가할 때 '그 산업이 버는 돈'만 볼 게 아니라, 그 호황이 통화정책에 미치는 피드백까지 함께 봐야 소비·투자 전반에 미치는 실질적 효과를 가늠할 수 있어요."
+        },
+        {
+          "tag": "종부세72만6천명고지345퍼센트증가1주택자세액118퍼센트급증공시가격상승",
+          "title": "올해 주택 종부세 72만6천명에 고지…1년새 34.5% 증가",
+          "source": {
+            "name": "파이낸셜뉴스",
+            "url": "https://www.fnnews.com/news/202611261602038024",
+            "date": "2026.11.26"
+          },
+          "f1": "파이낸셜뉴스는 올해(2026년 귀속) 주택분 종합부동산세 고지 대상이 72만6000명으로 지난해(54만명)보다 18만7000명(34.5%) 늘었다고 보도했어요. 매체는 주택분 고지 세액도 2조3000억원으로 지난해(1조7000억원)보다 6000억원(35.3%) 증가했다고 전했어요. 매체는 토지분까지 합친 전체 종부세 고지 인원은 81만7000명, 고지 세액은 6조원이라고 전했어요. 매체는 국세청이 고지서를 순차 발송 중이며 납부 기한은 12월15일이라고 전했어요.",
+          "f2": "매체는 특히 1세대 1주택자의 고지 인원이 23만1000명으로 53.0% 늘었고, 고지 세액은 3660억원으로 118.0% 급증했다고 전했어요. 매체는 다주택자는 43만8000명에 세액 9670억원으로 세액이 60.1% 늘었다고 전했어요. 매체는 지역별로는 서울의 증가세가 가장 두드러져 고지 인원이 45만9000명으로 전년보다 13만1000명(40.1%) 늘며 전국 17개 광역지자체 중 가장 높은 증가율을 기록했다고 전했어요. 매체는 기획재정부가 올해 종부세 제도 자체에는 큰 변화가 없었다며, 이번 증가가 공동주택 공시가격이 전국 평균 9.13%, 서울은 18.60% 오른 '시장 요인'에 따른 것이라고 설명했다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 세율이나 공제 기준 같은 제도 자체는 바뀌지 않아도 공시가격만 많이 오르면 종부세 대상자와 세액이 동시에 큰 폭으로 뛸 수 있다는 점이에요. 1세대 1주택자의 고지 인원 증가율(53.0%)보다 세액 증가율(118.0%)이 훨씬 크다는 사실은, 과세 대상에 새로 포함된 사람이 늘어난 것 이상으로 기존 대상자들의 공시가격 상승이 세액을 끌어올렸다는 뜻이에요. 서울의 증가율(40.1%)이 전국에서 가장 높았다는 점은, 종부세 부담이 지역에 따라 매우 불균등하게 쏠리고 있다는 걸 보여줘요. 컨설팅 관점에서는 부동산 관련 세제나 소비 여력을 분석할 때 '세율이 바뀌었는가'만 볼 게 아니라, 공시가격처럼 정책 변경 없이도 세 부담을 크게 바꿔놓는 시장 변수를 함께 추적해야 실제 가계의 처분가능소득에 미치는 영향을 더 정확히 가늠할 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "tech",
+      "no": "04",
+      "title": "테크·AI",
+      "slug": "Tech & AI",
+      "items": [
+        {
+          "tag": "엔비디아동남아4개국서버선적중단말레이시아싱가포르태국인도네시아수출통제우회로차단",
+          "title": "엔비디아, 동남아 4개국向 AI 서버 선적 일시 중단",
+          "source": {
+            "name": "TechCrunch",
+            "url": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/",
+            "date": "2026.11.26"
+          },
+          "f1": "테크크런치는 엔비디아가 델, 슈퍼마이크로 등 협력사들에 말레이시아·싱가포르·태국·인도네시아 4개국向 서버 선적을 잠정 중단하라고 지시했다고 월스트리트저널을 인용해 보도했어요. 매체는 엔비디아가 이들 4개국 수입업체들이 미국의 수출 규정을 제대로 준수하고 있는지 다시 점검할 때까지 선적을 보류한다고 밝혔으며 중단 기간은 아직 정해지지 않았다고 전했어요. 매체는 파이낸셜타임스를 인용해 협력사들이 이미 4개국 구매자들에게 주문품을 선적할 수 없다고 통지했다고 전했어요. 매체는 엔비디아·델·슈퍼마이크로 모두 로이터의 확인 요청에 즉답하지 않았다고 전했어요.",
+          "f2": "매체는 이번 조치가 중국 기업들이 이 4개국의 데이터센터를 통해 원격으로 엔비디아 칩에 접근해온 '구멍'을 미국 상무부가 이달 초 막은 데 따른 후속 조치라고 전했어요. 매체는 지난 11월19일부터 시행된 새 규정에 따라 인도네시아·말레이시아·싱가포르·태국·브라질 5개국에 첨단 AI 칩을 수출할 때는 미국 정부의 사전 허가(라이선스)가 필요해졌다고 전했어요. 매체는 한 소식통이 선적을 재개하려면 협력사들이 최종 구매자와 실제 설치 장소를 문서로 입증해야 할 수 있다고 전했다고 밝혔어요. 매체는 이미 운송 중인 물량이 영향을 받는지는 아직 불분명하다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, AI 반도체 수출통제가 이제 '어느 나라에 파는가'를 넘어 '그 나라를 거쳐 실제로 누가 쓰는가'까지 추적하는 방향으로 정교해지고 있다는 점이에요. 동남아 데이터센터가 중국 기업들의 우회 경로로 쓰였다는 사실이 드러나자 미국이 아예 그 경로 전체에 라이선스 의무를 씌운 건, 개별 거래를 막는 것보다 구조적인 구멍을 막는 쪽으로 규제의 초점이 옮겨가고 있다는 뜻이에요. 기간도 정해지지 않은 채 선적이 전면 중단됐다는 사실은, 동남아에 데이터센터를 짓고 있는 기업들에게는 '규정 준수 여부가 확인될 때까지' 사업 계획 자체가 불확실해진다는 걸 보여줘요. 컨설팅 관점에서는 반도체·AI 인프라 기업의 아시아 진출 전략을 평가할 때 그 나라의 수요나 전력 비용만 볼 게 아니라, 그 나라가 '제3국 우회 경로'로 지목돼 갑작스러운 수출 규제에 노출될 가능성까지 함께 짚어야 투자의 지속가능성을 가늠할 수 있어요."
+        }
+      ]
+    },
+    {
+      "id": "japan",
+      "no": "05",
+      "title": "일본 경제·시장",
+      "slug": "Japan",
+      "items": [
+        {
+          "tag": "JT일본담배산업러시아자산몰수배당삭감순손실연결제외주가30퍼센트급락",
+          "title": "日 JT, 러시아 자산 몰수에 배당 삭감…주가 두 달 새 30%대 급락",
+          "source": {
+            "name": "Nikkei Asia",
+            "url": "https://asia.nikkei.com/business/markets/equities/japan-tobacco-shares-fall-10-as-russia-seizure-jolts-900-000-retail-holders",
+            "date": "2026.11.20"
+          },
+          "f1": "닛케이아시아는 러시아 정부가 자국 내 일본담배산업(JT) 계열사 7곳을 몰수해 임시관리로 돌린 데 따라 JT 주가가 11월20일(금) 하루 만에 최대 10% 추가로 떨어졌다고 보도했어요. 매체는 고배당주로 인기가 높았던 이 종목이 최근 2주 사이 주가가 30% 넘게 빠졌다고 전했어요. 매체는 JT가 러시아 사업에 대한 지배력을 잃으면서 1조3770억엔(약 87억달러) 규모의 손실을 반영해, 올해(12월 결산) 순손실 7240억엔을 낼 것으로 예상한다고 밝혔다고 전했어요. 매체는 JT가 연간 배당 전망도 주당 234엔에서 204엔으로 낮췄다고 전했어요.",
+          "f2": "매체는 이번 사태가 지난 11월5일 푸틴 대통령이 JT의 해외법인 JTI 산하 러시아 내 담배 제조·가공 법인 4곳을 '임시관리' 대상에 올리는 포고령에 서명하면서 시작됐다고 전했어요. 매체는 11월7일 추가 포고령으로 3곳이 더해져 몰수 대상이 총 7곳으로 늘었고, 이 법인들의 경영권이 러시아 측 기관 '프롬이슐레니예 악티비(산업자산)'로 넘어갔다고 전했어요. 매체는 러시아 사업이 그동안 JT 그룹 전체 이익의 약 4분의 1을 차지해왔다고 전했어요. 매체는 JT 최고경영자 쓰쓰이 다케히코가 러시아를 제외하더라도 2027~2029년 영업이익이 매년 10% 넘게 성장할 것이라고 말했다고 전했어요.",
+          "f3": "이 사례가 보여주는 건, 한 나라의 정치적 결정 하나로 기업 전체 이익의 4분의 1을 차지하던 해외 사업을 하루아침에 재무제표에서 통째로 들어내야 하는 상황이 올 수 있다는 점이에요. 고배당주로 알려졌던 종목이 배당을 줄이면서까지 손실을 흡수해야 했다는 사실은, 안정적인 현금흐름을 보고 투자한 주주들에게도 지정학적 리스크가 고스란히 전가될 수 있다는 걸 보여줘요. 몰수 대상 법인이 처음 4곳에서 일주일 만에 7곳으로 늘었다는 점은, 이런 조치가 한 번에 끝나지 않고 단계적으로 확대될 수 있다는 뜻이기도 해요. 컨설팅 관점에서는 지정학적으로 민감한 국가에 생산기지를 둔 기업을 평가할 때 '현재 그 사업이 버는 돈'만 볼 게 아니라, 그 사업을 하루아침에 잃었을 때 전체 손익과 배당 정책이 얼마나 흔들릴 수 있는지까지 시나리오로 짚어봐야 해요.",
+          "vocab": {
+            "w": "連結除外",
+            "r": "renketsu jogai",
+            "m": "'연결 제외(연결 대상에서 뺌)'를 뜻하는 일본어 표현이에요. 자회사에 대한 실질적 지배력을 잃으면 그 자회사의 실적을 모회사의 연결재무제표에 더 이상 포함시키지 않는 회계 처리를 가리켜요. 오늘 기사에서 JT가 러시아 정부에 몰수당한 러시아 법인들을 앞으로 연결재무제표에서 제외하기로 한 것이 바로 이 사례예요."
+          }
+        }
+      ]
+    }
+  ],
+  "industry": {
+    "name": "담배(연초)",
+    "valueChain": "잎담배 재배·수매 → 제조(연초 가공·블렌딩·필터·포장) → 각국 유통·세금 납부 → 소매 판매(편의점·전매점)",
+    "bm": "담배 산업은 제품 자체의 기술 차별화 여지가 크지 않은 대신 니코틴 의존에 따른 반복구매 수요가 안정적이라, 판매량 증가보다 '가격 인상분을 소비자에게 얼마나 전가하느냐'가 수익의 핵심이다.",
+    "ksf": "① 각국 정부와의 인허가·세율 협상력(담배소비세 등 각종 세금이 판매가의 상당 부분을 차지), ② 흡연율이 줄어도 반복구매 수요를 바탕으로 꾸준한 현금흐름과 고배당을 유지하는 능력, ③ 전쟁·제재 같은 돌발 리스크로 특정 국가 사업을 통째로 잃을 가능성에 대비해 여러 나라에 생산·매출을 분산해두는 능력",
+    "issue": "일본담배산업(JT)은 러시아 정부가 자국 내 생산법인 7곳을 몰수하면서 그룹 이익의 약 4분의 1을 차지하던 러시아 사업을 한순간에 잃었고, 1조3770억엔 손실을 반영해 배당까지 줄이며 수익 구조를 다시 짜야 하는 상황에 놓여 있다."
+  },
+  "bcg": [
+    {
+      "titleKo": "신뢰가 곧 할인율이다 — BCG 2026년 연말 세일 소비자 조사",
+      "title": "BCG Year-End Sales Events Consumer Study 2026: For Year-End Sales Events, Trust Is the New Currency",
+      "url": "https://www.bcg.com/publications/2026/trust-matters-year-end-sales-events",
+      "summary": "BCG는 10개국 소비자 1만220명을 대상으로 한 6번째 연례 연말 세일 소비자 조사를 발표했어요. 조사에 따르면 '블랙프라이데이 할인이 실제로 더 싸다'고 신뢰하는 소비자는 54%에 불과했고, 5명 중 1명은 할인 자체를 적극적으로 불신한다고 답했어요. 조사는 소비자의 22%가 '할인은 어차피 항상 있다'는 피로감 때문에 연말 세일에서 지출을 줄이거나 아예 참여하지 않겠다고 밝혔다고 전했어요. 흥미로운 점은 이런 불신에도 소비자들이 '좋은 할인'으로 인정하는 기준 자체는 더 높아지지 않았고, 할인 신뢰를 높이는 요인은 유명 인플루언서 추천이 아니라 소매업체의 평판과 환불 보장이라는 조사 결과도 함께 제시됐어요.",
+      "soWhat": "오늘 다룬 반도체 수출 호황이나 관세처럼 '숫자가 커지는' 뉴스와 달리, 이 조사는 소비자들이 익숙한 마케팅 장치(대규모 할인)에 점점 무뎌지고 있다는 걸 보여줘요. 컨설팅 관점에서는 유통·소비재 기업의 할인 전략을 설계할 때 '얼마나 깎아주는가'보다 '그 할인을 소비자가 진짜라고 믿게 만드는 신뢰 장치(평판, 환불 보장)를 갖췄는가'가 장기적인 매출 전환율을 더 크게 좌우한다는 점을 함께 짚어야 해요."
+    }
+  ],
+  "story": "오늘 이야기는 쿠웨이트에서 시작할게. ABC뉴스에 따르면 11월26일(목) 쿠웨이트의 방공 감시시설이 이란제로 추정되는 드론 공격을 받았는데, 이 시설을 정비하던 이탈리아 방산업체 라인메탈 소속 기술자 2명이 숨졌어. 이탈리아 외교장관 타야니는 두 사람이 쿠웨이트의 '스카이가드' 방공체계 탐지 안테나를 손보던 36세·65세 기술자였다고 밝혔어. 이란은 '위장작전'이라며 책임을 전면 부인했는데, 사실 이 전쟁은 지난 2월28일 미국과 이스라엘이 이란을 기습 타격하면서 시작된 거라 벌써 9개월째야. 쿠웨이트는 이 전쟁의 당사국도 아닌데 미군·동맹군이 주둔한다는 이유만으로 올해 벌써 네 번째 공격을 받았고, 이번이 처음으로 유럽인이 목숨을 잃은 사례래. 이 전쟁이 어떻게 9개월을 끌어왔는지는 오늘의 따라잡기에서 자세히 다뤘어.\n\n미국 쪽에서는 또 다른 종류의 '전쟁'이 벌어졌어. ABC뉴스는 트럼프 행정부가 중국·EU·한국·일본 등 14개 나라에 '초과생산능력'을 이유로 새 관세를 매기겠다고 제안했다고 전했어. 중국엔 기존 관세에 20%포인트를 더 얹고 협상이 깨지면 최고 40%까지 올릴 수 있다고 했고, 한국·일본·EU는 15% 수준이래. 재밌는 건 이번 조치가 올해 2월 미국 최고법원이 트럼프의 '비상대권' 관세를 무효화한 뒤 줄어든 관세 수입을 메우려고 다른 법적 근거(무역법 301조)를 찾아 쓴 거라는 점이야. 법원이 한 가지 길을 막아도 행정부가 다른 길을 찾아낸 셈이지.\n\n한국에서도 '좋은 뉴스'가 오히려 부담으로 돌아오는 일이 있었어. 한국은행이 11월26일 기준금리를 3.00%에서 3.25%로 올렸는데, 이투데이에 따르면 반도체 수출 호황으로 경기가 너무 잘 돌아가서 물가가 걱정될 정도라는 게 이유였대. 한은은 아예 내년 성장률 전망을 2.9%에서 4.1%로 확 올려 잡았어. 그런데 코스피는 이 소식에 장중 2%대였던 상승폭을 0.29%까지 줄이며 마감했어 — 좋은 성장 전망도 '금리가 더 오를 수 있다'는 걱정 앞에서는 힘을 못 쓴 거야. 같은 날 국세청은 올해 주택 종부세를 72만6000명에게 고지했다고 밝혔는데, 파이낸셜뉴스에 따르면 이는 1년 전보다 34.5%나 늘어난 숫자래. 특히 1주택자는 대상자가 53% 늘었는데 세금은 118%나 뛰었어 — 세율이 바뀐 게 아니라 집값(공시가격)이 많이 올라서 그런 거라고 정부는 설명했어.\n\n테크 쪽에서는 엔비디아가 동남아 4개국(말레이시아·싱가포르·태국·인도네시아)向 서버 선적을 잠정 중단시켰어. 테크크런치에 따르면 중국 기업들이 이 나라들의 데이터센터를 거쳐 엔비디아 칩에 '원격으로' 접근해온 우회로가 들통나자, 미국 정부가 이 경로 전체에 수출 허가 의무를 씌운 거야. 선적을 다시 하려면 협력사들이 최종 구매자와 설치 장소까지 문서로 입증해야 할 수 있다니, 동남아에 데이터센터를 짓던 기업들 입장에서는 사업계획 자체가 당분간 안갯속에 빠진 셈이지.\n\n마지막은 일본 얘기야. 닛케이아시아에 따르면 일본담배산업(JT)이 러시아 정부에 러시아 내 생산법인 7곳을 몰수당하면서 그룹 이익의 4분의 1을 차지하던 사업을 한순간에 잃었어. JT는 1조3770억엔(약 87억달러) 손실을 반영해서 연간 배당도 주당 234엔에서 204엔으로 깎았고, 주가는 최근 2주 사이 30% 넘게 빠졌어. 고배당주로 인기 많던 종목이 정치적 결정 하나로 배당까지 줄여야 하는 처지가 된 거야. 회사는 이 러시아 사업을 앞으로 재무제표에서 아예 빼기로 했는데, 이걸 일본어로 '렌케츠조가이(連結除外)'라고 불러.\n\n오늘 하루를 정리하면, 쿠웨이트의 드론 공격부터 미국의 관세, 한국의 금리와 세금, 동남아 수출통제, 일본 기업의 자산 몰수까지 — 공통적으로 '당사자가 아닌 제3자'가 더 크게 흔들린 하루였어. 전쟁 당사국이 아닌 쿠웨이트가 공격받고, 관세를 매긴 미국이 아니라 한국·일본 같은 동맹국까지 영향권에 들고, 중국을 겨냥한 규제인데 동남아 기업들의 사업계획이 흔들리고, 러시아와 직접 상관없는 JT 주주들이 배당 삭감을 감수해야 했으니까. 어느 결정이든 그 영향이 결정 당사자보다 옆에 있는 제3자에게 더 크게 번질 수 있다는 걸 보여준 하루였어."
+};
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s => (s==null?"":String(s));
+const nowKST = new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'});
+if(BRIEFING.indices && BRIEFING.indices.length){ $("#indices").innerHTML = BRIEFING.indices.map(x=>{ const n=parseFloat(String(x.changePct).replace(/[^0-9.\-]/g,"")); const dir = n>0?"up":(n<0?"down":"flat"); const arrow = dir==="up"?"▲":(dir==="down"?"▼":"—"); return `<div class="idxcard"><div class="iname2">${esc(x.name)}</div><div class="ival">${esc(x.value)}</div><div class="ichg ${dir}">${arrow} ${esc(x.changePct)}%</div><div class="inote">${esc(x.note||"")}</div></div>`; }).join(""); } else { $("#indices").style.display="none"; }
+$("#meta").innerHTML = `<b><a href="archive.html" style="text-decoration:underline;text-decoration-color:var(--accent-soft)" title="지난 브리핑 모아보기">${esc(BRIEFING.dateLabel)}</a></b><span>·</span><span>${esc(BRIEFING.city||'Seoul')} · ${nowKST} KST 열람</span>`;
+$("#mood").textContent = BRIEFING.mood || "";
+$("#heads").innerHTML = BRIEFING.headliners.map(h=>`<li>${esc(h)}</li>`).join("");
+const cu = BRIEFING.catchup;
+if(cu){ $("#catchup").innerHTML = `<span class="ck">🕰️ 오늘의 따라잡기 — 처음부터 이해하기</span><h3>${esc(cu.topic)}</h3><p class="intro">${esc(cu.intro)}</p><ul class="tl">${(cu.timeline||[]).map(t=>`<li><span class="d">${esc(t.d)}</span>${esc(t.e)}</li>`).join("")}</ul><div class="why">${cu.why||""}</div>`; } else { $("#catchup").style.display="none"; }
+if(BRIEFING.story){ const storyParas = BRIEFING.story.split(/\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join(""); $("#story").innerHTML = `<span class="sk">📖 오늘의 이야기</span>${storyParas}`; } else { $("#story").style.display="none"; }
+const navItems = [...BRIEFING.sections.map(s=>({id:s.id,no:s.no,title:s.title})), ...(BRIEFING.industry ? [{id:"industry",no:"🏭",title:"산업"}] : []), ...(BRIEFING.bcg && BRIEFING.bcg.length ? [{id:"bcg",no:"📘",title:"BCG"}] : []), ...(BRIEFING.hkmarket ? [{id:"hkmarket",no:"📺",title:"한경마켓"}] : [])];
+$("#nav").innerHTML = navItems.map(n=> `<a href="#${n.id}" data-id="${n.id}"><span class="n">${esc(n.no)}</span>${esc(n.title)}</a>`).join("");
+function srcHtml(s){ if(!s) return ""; const link = s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">원문(${esc(s.date)})↗</a>` : (s.date?` · ${esc(s.date)}`:""); return `<span class="item__src">${esc(s.name)}${link}</span>`; }
+function fieldRow(lab,val,cls){return val?`<div class="field ${cls||""}"><span class="lab">${lab}</span><span class="val">${val}</span></div>`:""}
+function termsRow(terms){ if(!terms||!terms.length) return ""; return `<div class="terms"><div class="th">📖 용어 풀이</div>${terms.map(t=>`<div class="t"><b>${esc(t.t)}</b> — ${esc(t.d)}</div>`).join("")}</div>`; }
+function vocabRow(v){ if(!v) return ""; return `<div class="jword"><span class="jw-badge">🇯🇵 오늘의 비즈니스 일본어</span><span class="jw-text"><b>${esc(v.w)}</b> <span class="jw-r">(${esc(v.r)})</span> — ${esc(v.m)}</span></div>`; }
+function itemCard(it){ return `<article class="item open"><button class="item__head" aria-expanded="true" type="button"><span class="tag">${esc(it.tag)}</span><span><span class="item__title">${esc(it.title)}</span><br>${srcHtml(it.source)}</span><span class="chev">▾</span></button><div class="item__wrap"><div class="item__body"><div class="item__inner">${fieldRow("무슨 일",it.f1)}${fieldRow("그동안의 이야기",it.f2,"story")}${fieldRow("So What",it.f3)}${termsRow(it.terms)}${vocabRow(it.vocab)}</div></div></div></article>`; }
+let html = BRIEFING.sections.map(s=>`<section class="block" id="${s.id}"><div class="shead"><span class="no">${esc(s.no)}</span><h2>${esc(s.title)}</h2><span class="slug">${esc(s.slug)}</span></div>${s.items.map(itemCard).join("")}</section>`).join("");
+if(BRIEFING.industry){ const ind=BRIEFING.industry; const indRows=[["밸류체인",ind.valueChain],["비즈니스모델",ind.bm],["경쟁력 요소",ind.ksf],["최대 이슈",ind.issue]].map(([lab,val])=>fieldRow(lab,esc(val))).join(""); html += `<section class="block" id="industry"><div class="shead"><span class="no">🏭</span><h2>오늘의 산업 소개</h2><span class="slug">Industry</span></div><div class="industrycard"><span class="ik">🏭 오늘의 산업 소개</span><div class="iname">${esc(ind.name||"")}</div><div class="ifields">${indRows}</div></div></section>`; }
+if(BRIEFING.bcg && BRIEFING.bcg.length){ const bcgItems=BRIEFING.bcg.map(b=>`<div class="bcgitem"><div class="btitle">${esc(b.titleKo)}</div><div class="borig">${esc(b.title)}</div><p class="bsum">${esc(b.summary)}</p><div class="bsw"><b>So What</b> — ${esc(b.soWhat)}</div><a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">원문 보기 ↗</a></div>`).join(""); html += `<section class="block" id="bcg"><div class="shead"><span class="no">📘</span><h2>BCG 인사이트</h2><span class="slug">BCG Publications</span></div>${bcgItems}</section>`; }
+if(BRIEFING.hkmarket){ const hk=BRIEFING.hkmarket; const hkTopics=(hk.topics||[]).map(t=>`<div class="hktopic"><div class="httl">${esc(t.topic)}</div><div class="hdet">${esc(t.detail)}</div></div>`).join(""); html += `<section class="block" id="hkmarket"><div class="shead"><span class="no">📺</span><h2>한경코리아마켓</h2><span class="slug">YouTube Morning Brief</span></div><div class="hkmeta">${esc(hk.broadcastLabel||"")} · <a href="${esc(hk.videoUrl||"")}" target="_blank" rel="noopener">${esc(hk.videoTitle||"원본 방송 보기")} ↗</a></div>${hkTopics}</section>`; }
+$("#main").innerHTML = html;
+$("#main").insertAdjacentHTML("beforeend",`<footer>소스 정책: BBC · ABC · 조선비즈(산업) · TechCrunch · ZDNet · Gizmodo · 일본 주요 경제매체 · BCG · 한경코리아마켓(유튜브) — 작성 시점 검색·교차 확인 기준.<br>전황·시세는 빠르게 변하므로 중요한 판단 전 원문 확인 권장.<br>💡 매일 아침 9:30 KST에 이 페이지가 자동으로 새 브리핑으로 갱신됩니다. · 📚 <a href="archive.html">지난 브리핑 모아보기</a></footer>`);
+document.querySelectorAll(".item__head").forEach(h=>{ h.addEventListener("click",()=>{ const it=h.closest(".item"); const open=it.classList.toggle("open"); h.setAttribute("aria-expanded",open?"true":"false"); }); });
+const allBtn=$("#toggleAll"), allLab=$("#toggleAllLabel");
+allBtn.addEventListener("click",()=>{ const items=[...document.querySelectorAll(".item")]; const anyClosed=items.some(i=>!i.classList.contains("open")); items.forEach(i=>{i.classList.toggle("open",anyClosed); i.querySelector(".item__head").setAttribute("aria-expanded",anyClosed?"true":"false");}); allLab.textContent=anyClosed?"접기":"펼치기"; });
+const root=document.documentElement;
+$("#theme").addEventListener("click",()=>{root.setAttribute("data-theme", root.getAttribute("data-theme")==="dark"?"light":"dark");});
+$("#print").addEventListener("click",()=>window.print());
+const links=[...document.querySelectorAll(".navlinks a")];
+const spy=new IntersectionObserver(ents=>{ ents.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle("active",l.dataset.id===e.target.id));}}); },{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll("section.block").forEach(s=>spy.observe(s));
+</script>
+</body>
+</html>
